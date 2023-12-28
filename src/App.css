@@ -12,3 +12,7 @@ canvas {
   white-space: nowrap;
   /* Additional styling like width, height, padding, etc. can be added as needed */
 }
+
+input{
+  width: 100px;
+}

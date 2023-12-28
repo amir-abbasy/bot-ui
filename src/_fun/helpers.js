@@ -10,4 +10,23 @@ function calculatePercentage(value, percentage) {
   return (value * percentage) / 100;
 }
 
-export { calculatePercentage };
+function percentageChange(num1, num2) {
+  const diff = num2-num1
+  return diff*100/num1
+}
+
+
+function calculateFee(orderValue, leverage, feeRate) {
+  // Convert fee rate to a decimal
+  const feeRateDecimal = feeRate / 100;
+
+  // Calculate the fee using the formula
+  const fee = (orderValue * leverage * feeRateDecimal);
+
+  return fee;
+}
+
+
+export { calculatePercentage, percentageChange, calculateFee};
+
+

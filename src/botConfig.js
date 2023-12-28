@@ -1,6 +1,6 @@
 // BTC/USDT
 let botConfig = {
-  S_R_Area:  30, // 100%
+  S_R_Area:  40, // 100%
   leftValue: 100,
   rightValue: 100,
 
@@ -26,7 +26,8 @@ let botConfig = {
   // initialSupport: 25800.82,
 
   initalRangeStart: 40,
-
+  padding : 100,
+  candleWidth : 7,
   test: {},
 };
 
