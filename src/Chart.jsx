@@ -96,6 +96,7 @@ const CustomCandlestickChart = ({
     var supportTouches = 0;
     var resistTouches = 0;
     var fakeBreakoutCount = 0;
+    var resetRange = 0
 
     var diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
     var supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
@@ -137,10 +138,10 @@ const CustomCandlestickChart = ({
       var isHolyday = day == 5 || day == 6; // SAT, SUN
       // if (isHolyday) Mark(ctx, { x1: x, y1: 30 }, "yellow", 4, 1)
       // S & R
-      Mark(ctx, pricePoint(resistBoxEnd_price, index), upColor + 40, 10, 1);
-      Mark(ctx, pricePoint(resistBoxStart_price, index), upColor + 90, 10, 1);
-      Mark(ctx, pricePoint(supportBoxStart_price, index), downColor + 90, 10, 1);
-      Mark(ctx, pricePoint(supportBoxEnd_price, index), downColor + 40, 10, 1);
+      Mark(ctx, pricePoint(resistBoxEnd_price, index), upColor + 40, candleWidth, 1);
+      Mark(ctx, pricePoint(resistBoxStart_price, index), upColor + 90, candleWidth, 1);
+      Mark(ctx, pricePoint(supportBoxStart_price, index), downColor + 90, candleWidth, 1);
+      Mark(ctx, pricePoint(supportBoxEnd_price, index), downColor + 40, candleWidth, 1);
 
       // drawRect(ctx, { x1: x, y1: resistBoxStart, w: 10, h: resistBoxEnd-resistBoxStart }, upColor+20);
 
@@ -239,16 +240,7 @@ const CustomCandlestickChart = ({
           console.log("parallize bearish", index);
 
           Text(ctx, "PRL", x, resistBoxEnd);
-          // UPDATE Support Resist BOXES to last range
-          // diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
-          // resist[tradingRange]["diff"] = diff;
-          // supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
-          // support[tradingRange]["diff"] = diff;
-          // resistBoxStart = resist[tradingRange]["y1"] + supportResistArea / 2;
-          // resistBoxEnd = resist[tradingRange]["y1"] - supportResistArea / 2;
-          // supportBoxStart = support[tradingRange]["y1"] - supportResistArea / 2;
-          // supportBoxEnd = support[tradingRange]["y1"] + supportResistArea / 2;
-
+          // UPDATE Support Resist BOXES
           diff_price = resist[tradingRange]["price"] - support[tradingRange]["price"];
           supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
           resistBoxStart_price = resist[tradingRange]["price"] - supportResistArea_price / 2;
@@ -274,7 +266,7 @@ const CustomCandlestickChart = ({
         var fakeBreakout = point.o > support[tradingRange]["price"];
         if (fakeBreakout && breakout != "await") {
           console.log("reverse bearish fakeBreakout ", index);
-          Text(ctx, "RV", x, resistBoxEnd+20);
+          Text(ctx, "RV-L", x, resistBoxEnd + 20);
           fakeBreakoutCount += 1;
           tradingRange += 1;
           breakout = "await";
@@ -283,20 +275,9 @@ const CustomCandlestickChart = ({
           // support[tradingRange] = pricePoint(support[tradingRange - 1]["price"],index);
           support[tradingRange] = pricePoint(lhs[lhs_tmp.length - 1], index);
 
-
-          // UPDATE Support Resist BOXES
-          // diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
-          // supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
-          // resist[tradingRange]["diff"] = diff;
-          // support[tradingRange]["diff"] = diff;
-          // resistBoxStart = resist[tradingRange]["y1"] + supportResistArea / 2;
-          // resistBoxEnd = resist[tradingRange]["y1"] - supportResistArea / 2;
-          // supportBoxStart = support[tradingRange]["y1"] - supportResistArea / 2;
-          // supportBoxEnd = support[tradingRange]["y1"] + supportResistArea / 2;
-
-
-          // diff_price = resist[tradingRange]["price"] - support[tradingRange]["price"];
-          // supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
+          // UPDATE Support Resist BOXES to last range
+          diff_price = resist[tradingRange - 1]["price"] - support[tradingRange - 1]["price"];
+          supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
           // resistBoxStart_price = resist[tradingRange]["price"] - supportResistArea_price / 2;
           // resistBoxEnd_price = resist[tradingRange]["price"] + supportResistArea_price / 2;
           // supportBoxStart_price = support[tradingRange]["price"] + supportResistArea_price / 2;
@@ -345,26 +326,13 @@ const CustomCandlestickChart = ({
           support[tradingRange] = pricePoint(newSupport, index);
           var newResist = Math.max(...hl.map((_) => _.point.c)); // lowest value from higherlows
           resist[tradingRange] = pricePoint(newResist, index);
-
-          // UPDATE Support Resist BOXES to last range
-          // diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
-          // resist[tradingRange]["diff"] = diff;
-          // support[tradingRange]["diff"] = diff;
-          // supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
-          // resistBoxStart = resist[tradingRange]["y1"] - supportResistArea / 2;
-          // resistBoxEnd = resist[tradingRange]["y1"] + supportResistArea / 2;
-          // supportBoxStart = support[tradingRange]["y1"] + supportResistArea / 2;
-          // supportBoxEnd = support[tradingRange]["y1"] - supportResistArea / 2;
-
-          diff_price = resist[tradingRange]["price"] - support[tradingRange]["price"];
-          supportResistArea_price = calculatePercentage(
-            diff_price,
-            botConfig.S_R_Area
-          );
-          resistBoxStart_price = resist[tradingRange]["price"] + supportResistArea_price / 2;
-          resistBoxEnd_price = resist[tradingRange]["price"] - supportResistArea_price / 2;
-          supportBoxStart_price = support[tradingRange]["price"] - supportResistArea_price / 2;
-          supportBoxEnd_price = support[tradingRange]["price"] + supportResistArea_price / 2;
+          // UPDATE Support Resist BOXES
+          // diff_price = resist[tradingRange-1]["price"] - support[tradingRange-1]["price"];
+          // supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
+          // resistBoxStart_price = resist[tradingRange]["price"] + supportResistArea_price / 2;
+          // resistBoxEnd_price = resist[tradingRange]["price"] - supportResistArea_price / 2;
+          // supportBoxStart_price = support[tradingRange]["price"] - supportResistArea_price / 2;
+          // supportBoxEnd_price = support[tradingRange]["price"] + supportResistArea_price / 2;
 
           // positionTmp["entryPrice"] = point.c;
           // positionTmp["x1"] = x;
@@ -378,7 +346,7 @@ const CustomCandlestickChart = ({
         var fakeBreakout = point.o < resist[tradingRange]["price"];
         if (fakeBreakout && breakout != "await") {
           console.log("reverse bullish fakeBreakout ", index);
-          Text(ctx, "RV", x, resistBoxEnd+20);
+          Text(ctx, "RV", x, resistBoxEnd + 20);
           tradingRange += 1;
           breakout = "await";
 
@@ -389,25 +357,13 @@ const CustomCandlestickChart = ({
 
           var newSupportFromLast_lls = Math.min(...lhs_tmp.slice(-3)); // lowest value from lowerlows
           support[tradingRange] = pricePoint(newSupportFromLast_lls, index);
-
-
-
           // UPDATE Support Resist BOXES
-          // diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
-          // supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
-          // resist[tradingRange]["diff"] = diff;
-          // support[tradingRange]["diff"] = diff;
-          // resistBoxStart = resist[tradingRange]["y1"] + supportResistArea / 2;
-          // resistBoxEnd = resist[tradingRange]["y1"] - supportResistArea / 2;
-          // supportBoxStart = support[tradingRange]["y1"] - supportResistArea / 2;
-          // supportBoxEnd = support[tradingRange]["y1"] + supportResistArea / 2;
-
-          // diff_price = resist[tradingRange]["price"] - support[tradingRange]["price"];
-          // supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
-          // resistBoxStart_price = resist[tradingRange]["price"] + supportResistArea_price / 2;
-          // resistBoxEnd_price = resist[tradingRange]["price"] - supportResistArea_price / 2;
-          // supportBoxStart_price = support[tradingRange]["price"] - supportResistArea_price / 2;
-          // supportBoxEnd_price = support[tradingRange]["price"] + supportResistArea_price / 2;
+          diff_price = resist[tradingRange]["price"] - support[tradingRange]["price"];
+          supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
+          resistBoxStart_price = resist[tradingRange]["price"] - supportResistArea_price / 2;
+          resistBoxEnd_price = resist[tradingRange]["price"] + supportResistArea_price / 2;
+          supportBoxStart_price = support[tradingRange]["price"] + supportResistArea_price / 2;
+          supportBoxEnd_price = support[tradingRange]["price"] - supportResistArea_price / 2;
 
           fakeBreakoutCount += 1;
         }
@@ -464,39 +420,33 @@ const CustomCandlestickChart = ({
 
         // N E W  R A N G E  O N  L O N G  C L O S E
         if (point.o < resistBoxEnd_price) {
-          resist[tradingRange]["x2"] = x;
-          support[tradingRange]["x2"] = x;
-          tradingRange += 1;
-
-          resist[tradingRange] = pricePoint(point.c, index);
-          var newSupport = Math.max(...lh.slice(0).map((_) => _.yClose)); // lowest value from lowerlows
-          var getLh = lh.find((_) => _.yClose == newSupport);
-          support[tradingRange] = pricePoint(getLh?.point?.c ?? point.c, index);
-          // UPDATE Support Resist BOXES
-          // diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
-          // supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
-          // resist[tradingRange]["diff"] = diff;
-          // support[tradingRange]["diff"] = diff;
-          // resistBoxStart = resist[tradingRange]["y1"] + supportResistArea / 2;
-          // resistBoxEnd = resist[tradingRange]["y1"] - supportResistArea / 2;
-          // supportBoxStart = support[tradingRange]["y1"] - supportResistArea / 2;
-          // supportBoxEnd = support[tradingRange]["y1"] + supportResistArea / 2;
-
-          diff_price = resist[tradingRange]["price"] - support[tradingRange]["price"];
-          supportResistArea_price = calculatePercentage(
-            diff_price,
-            botConfig.S_R_Area
-          );
-          resistBoxStart_price = resist[tradingRange]["price"] + supportResistArea_price / 2;
-          resistBoxEnd_price = resist[tradingRange]["price"] - supportResistArea_price / 2;
-          supportBoxStart_price = support[tradingRange]["price"] - supportResistArea_price / 2;
-          supportBoxEnd_price = support[tradingRange]["price"] + supportResistArea_price / 2;
+          resetRange += 1 
         }
 
         positions.push(positionTmp);
         positionTmp = {};
         isOrderPlaced = false;
         position_span = 0;
+      }
+
+      if (resetRange == 1) {
+        resist[tradingRange]["x2"] = x;
+        support[tradingRange]["x2"] = x;
+        tradingRange += 1;
+
+        var newSupportFromLast_lhs = Math.min(...lhs_tmp.slice(-3)); // lowest value from lowerlows
+        support[tradingRange] = pricePoint(newSupportFromLast_lhs, index);
+        var newSupportFromLast_hls = Math.max(...hls_tmp.slice(-3)); // lowest value from higherlows
+        resist[tradingRange] = pricePoint(newSupportFromLast_hls, index);
+        // UPDATE Support Resist BOXES
+        diff_price = resist[tradingRange]["price"] - support[tradingRange]["price"];
+        supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
+        resistBoxStart_price = resist[tradingRange]["price"] - supportResistArea_price / 2;
+        resistBoxEnd_price = resist[tradingRange]["price"] + supportResistArea_price / 2;
+        supportBoxStart_price = support[tradingRange]["price"] + supportResistArea_price / 2;
+        supportBoxEnd_price = support[tradingRange]["price"] - supportResistArea_price / 2;
+
+        resetRange = 0
       }
 
       // postion span calc
