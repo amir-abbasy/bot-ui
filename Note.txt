@@ -1,1 +1,19 @@
 https://api.kraken.com/0/public/OHLC?pair=BTCUSDT&interval=15&since=1548111600
+
+
+update trend line 
+
+
+# breakout
+
+- breakout happen then reversed
+if true breakout 
+ - new trend line 
+   support = last resist
+   resist  = top hl of last range
+if false breakout 
+ -  last trend line
+
+# close position
+- 
+
