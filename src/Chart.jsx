@@ -538,7 +538,6 @@ const CustomCandlestickChart = ({
       ctx.fillText(index, x - 2.5, yOpen - 400);
 
       // DRAW INDICATORS
-
       // HL 10
       if (hls[index]) {
         ctx.fillStyle = upColor;
