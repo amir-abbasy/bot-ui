@@ -7,13 +7,17 @@ import Pattern from "./Pattern";
 // import test_data from "./data_.json";
 // import test_data from "./data3.json";
 // import test_data from "./data_api.json";
-import test_data from "./data/2022-07-15.json";
+// import test_data from "./data/2022-07-15.json";
+import test_data from "./data/2022-08-01.json";
 // import test_data from "./data/2022-07-01.json"; // *
 import JsonLoader from './_fun/JsonLoader.jsx'
 
 import botConfig from "./botConfig";
 const data_offet = 0;
-const data_len = 1000; //700
+const data_len = 100; //700
+
+const speed = 5
+
 
 import {
   findHigherHighsAndLowerLows,
@@ -147,7 +151,6 @@ function App() {
   // );
 
 
-  const speed = 10
 
   return (
     <div>

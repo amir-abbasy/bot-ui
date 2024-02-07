@@ -247,6 +247,8 @@ const CustomCandlestickChart = ({
           // UPDATE Support Resist BOXES
           update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
           Text(ctx, "new range bearish", x, pricePoint(resistBoxEnd_price, index)['y1'] + 40);
+          breakoutBearishOffset = 0
+
 
         }
 
@@ -314,17 +316,17 @@ const CustomCandlestickChart = ({
 
         // if price return to last breakout point
         var fakeBreakout = point.o > support[tradingRange]["price"];
-        if (fakeBreakout && breakout != "await" && false) {
-          Text(ctx, "RV-L", x, pricePoint(resistBoxEnd_price, index)['y1'] + 20);
-          tradingRange += 1;
-          // breakout = "await";
+        if (fakeBreakout && breakout != "await") {
+          // Text(ctx, "RV-L", x, pricePoint(resistBoxEnd_price, index)['y1'] + 20);
+          // tradingRange += 1;
+          breakout = "await";
 
-          resist[tradingRange] = pricePoint(resist[tradingRange - 1]["price"], index);
-          // support[tradingRange] = pricePoint(support[tradingRange - 1]["price"],index);
-          support[tradingRange] = pricePoint(lhs[lhs_tmp.length - 1], index);
+          // resist[tradingRange] = pricePoint(resist[tradingRange - 1]["price"], index);
+          // // support[tradingRange] = pricePoint(support[tradingRange - 1]["price"],index);
+          // support[tradingRange] = pricePoint(lhs[lhs_tmp.length - 1], index);
 
-          diff_price = resist[tradingRange - 1]["price"] - support[tradingRange - 1]["price"];
-          supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
+          // diff_price = resist[tradingRange - 1]["price"] - support[tradingRange - 1]["price"];
+          // supportResistArea_price = calculatePercentage(diff_price, botConfig.S_R_Area);
 
           // UPDATE Support Resist BOXES to last range
           // // update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
@@ -456,7 +458,7 @@ const CustomCandlestickChart = ({
         if (fakeBreakout && breakout != "await") {
           // Text(ctx, "RV", x, pricePoint(resistBoxEnd_price, index)['y1'] + 20);
           // *tradingRange += 1;
-          // breakout = "await";
+          breakout = "await";
           // ENTRY("SHORT")
           // Text(ctx, "S-reverse", x, 100, 'blue');
 
@@ -491,6 +493,7 @@ const CustomCandlestickChart = ({
         // && false
       ) {
         ENTRY()
+        resetRange = 0
         Text(ctx, "L-normal", x, 100, 'blue');
       }
 
@@ -572,6 +575,7 @@ const CustomCandlestickChart = ({
         // && false
       ) {
         ENTRY('SHORT')
+        resetRange = 0
         Text(ctx, "S-normal", x, 100, 'blue');
       }
 
