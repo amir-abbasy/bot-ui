@@ -8,7 +8,7 @@ import Pattern from "./Pattern";
 // import test_data from "./data3.json";
 // import test_data from "./data_api.json";
 // import test_data from "./data/2022-07-15.json";
-import test_data from "./data/2022-08-01.json";
+import test_data from "./data/2023-01-01.json";
 // import test_data from "./data/2022-07-01.json"; // *
 import JsonLoader from './_fun/JsonLoader.jsx'
 

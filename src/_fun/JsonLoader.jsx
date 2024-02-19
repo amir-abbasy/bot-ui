@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import dates from '../data/data.json'
 
 const JsonLoader = ({ setJsonData = () => null }) => {
-  const [selectedDate, setSelectedDate] = useState('2022-08-01');
+  const [selectedDate, setSelectedDate] = useState('2023-01-01');
 
   useEffect(() => {
     // Assuming your JSON files are in the data folder
