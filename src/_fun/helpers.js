@@ -11,8 +11,8 @@ function calculatePercentage(value, percentage) {
 }
 
 function percentageChange(num1, num2) {
-  const diff = num2-num1
-  return diff*100/num1
+  const diff = num2 - num1
+  return diff * 100 / num1
 }
 
 
@@ -26,7 +26,7 @@ function calculateFee(orderValue, leverage, feeRate) {
   return fee;
 }
 
-
-export { calculatePercentage, percentageChange, calculateFee};
+const log = (..._) => console.log(..._)
+export { calculatePercentage, percentageChange, calculateFee, log };
 
 

@@ -14,9 +14,8 @@ import JsonLoader from './_fun/JsonLoader.jsx'
 
 import botConfig from "./botConfig";
 const data_offet = 0;
-const data_len = 100; //700
-
-const speed = 5
+const data_len = 308; //700
+const speed = 1
 
 
 import {
@@ -30,6 +29,7 @@ function App() {
   const [tradeConfig, setTradeConfig] = useState({
     data_offet,
     data_len,
+    speed
   });
   const YOUR_API_KEY = "43B883CE-9FB3-4C18-BA4E-B74369376210";
 
@@ -178,7 +178,7 @@ function App() {
           onClick={() => {
             setTradeConfig({
               ...tradeConfig,
-              data_len: tradeConfig.data_len - speed,
+              data_len: parseInt(tradeConfig.data_len) - tradeConfig.speed,
             });
           }}
           style={{ paddingLeft: 40, paddingRight: 40 }}
@@ -189,12 +189,32 @@ function App() {
           onClick={() => {
             setTradeConfig({
               ...tradeConfig,
-              data_len: tradeConfig.data_len + speed,
+              data_len: parseInt(tradeConfig.data_len) + tradeConfig.speed,
             });
           }}
           style={{ paddingLeft: 40, paddingRight: 40 }}
         >
           +
+        </button>
+
+
+        {[1, 5, 10, 100, 500].map((spd, idx) => {
+          return <button key={'speed_' + idx}
+            onClick={() => setTradeConfig({ ...tradeConfig, speed: spd })}
+            style={{ paddingLeft: 10, paddingRight: 10, color: tradeConfig.speed == spd ? 'black' : '#aaa' }}
+          >{spd}</button>
+        })}
+        <button
+          onClick={() => {
+            console.log(data.length);
+            setTradeConfig({
+              ...tradeConfig,
+              data_len,
+            });
+          }}
+          style={{ paddingLeft: 10, paddingRight: 10 }}
+        >
+          reset
         </button>
       </div>
       <div className="horizontal-scroll-container" ref={scrollableRef}>
