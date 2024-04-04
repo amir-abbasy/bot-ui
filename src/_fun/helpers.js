@@ -27,6 +27,66 @@ function calculateFee(orderValue, leverage, feeRate) {
 }
 
 const log = (..._) => console.log(..._)
-export { calculatePercentage, percentageChange, calculateFee, log };
+
+
+
+
+function calculateRSI(prices, period = 14) {
+  if (prices.length < period) {
+    throw new Error("Not enough prices to calculate RSI.");
+  }
+
+  const changes = [];
+  for (let i = 1; i < prices.length; i++) {
+    changes.push(prices[i] - prices[i - 1]);
+  }
+
+  const gains = [];
+  const losses = [];
+  for (let i = 0; i < changes.length; i++) {
+    if (changes[i] > 0) {
+      gains.push(changes[i]);
+      losses.push(0);
+    } else {
+      gains.push(0);
+      losses.push(-changes[i]);
+    }
+  }
+
+  let averageGain = gains.slice(0, period).reduce((acc, val) => acc + val, 0) / period;
+  let averageLoss = losses.slice(0, period).reduce((acc, val) => acc + val, 0) / period;
+
+  const rsArray = [];
+  rsArray.push(averageGain / averageLoss);
+
+  for (let i = period; i < prices.length; i++) {
+    averageGain = (averageGain * (period - 1) + gains[i]) / period;
+    averageLoss = (averageLoss * (period - 1) + losses[i]) / period;
+    rsArray.push(averageGain / averageLoss);
+  }
+
+  const rsiArray = rsArray.map(rs => 100 - (100 / (1 + rs)));
+
+  return rsiArray;
+}
+
+function calculateSMA(prices, period = 14) {
+  if (prices.length < period) {
+    throw new Error("Not enough prices to calculate SMA.");
+  }
+
+  // Slice the array from the back
+  const slicedPrices = prices.slice(-period);
+
+  const sum = slicedPrices.reduce((acc, val) => acc + val, 0);
+  const sma = sum / period;
+
+  return sma;
+}
+
+
+
+
+export { calculatePercentage, percentageChange, calculateFee, log, calculateRSI, calculateSMA };
 
 

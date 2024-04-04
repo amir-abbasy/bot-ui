@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import dates from '../data/data.json'
+import dates from '../data/data'
 
 const JsonLoader = ({ setJsonData = () => null }) => {
-  const [selectedDate, setSelectedDate] = useState('2023-01-01');
+  const [selectedDate, setSelectedDate] = useState('2022-01-11');
 
   useEffect(() => {
     // Assuming your JSON files are in the data folder
     const fetchData = async () => {
       try {
-        const response = await import(`../data/${selectedDate}.json`);
+        const response = await import(`../data/ohlcv/${selectedDate}.json`);
         setJsonData(response.default);
       } catch (error) {
         console.error('Error loading JSON data:', error);
