@@ -4,7 +4,7 @@ import JsonLoader from './_fun/JsonLoader.jsx'
 
 import botConfig from "./botConfig";
 const data_offet = 0;
-const data_len = 1000; //700
+const data_len = 275; //700
 const speed = 1
 const playSpeed = 500
 
@@ -29,14 +29,7 @@ function App() {
   const { events, activeCand, setActiveCand } = useStore()
 
 
-  const modifyData = ohlcv_data => ohlcv_data.slice(viewConfig.data_offet, viewConfig.data_len).map((_, k) => ({
-    t: _[0],
-    o: _[1],
-    h: _[2],
-    l: _[3],
-    c: _[4],
-    v: _[5],
-  }));
+  const modifyData = ohlcv_data => ohlcv_data.slice(viewConfig.data_offet, viewConfig.data_len).map((_, k) => ({ t: _[0], o: _[1], h: _[2], l: _[3], c: _[4], v: _[5] }));
 
 
   useEffect(() => {
@@ -215,13 +208,13 @@ function App() {
 
       </div>
 
-       <div className="logs">
-        {events.map((evt, index) => {
-          return <div key={'evnt_' + index}>
-            <p className="logs_txt">{index + 1}- {evt}</p>
+      <div className="logs">
+        {events.map((evt, id) => {
+          return <div key={'evnt_' + id}>
+            <p className="logs_txt">{evt.log} -{evt.index + 1}</p>
           </div>
         })}
-      </div> 
+      </div>
 
       {activeCand && <div style={{
         position: 'absolute',

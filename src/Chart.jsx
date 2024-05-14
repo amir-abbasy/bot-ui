@@ -103,13 +103,14 @@ const CustomCandlestickChart = ({
     let lh = []; // on trading range
     var hlOffset = 0;
     var lhOffset = 0;
+    var hlOffsetRange = 0;
+    var lhOffsetRange = 0;
     var position_span = 0;
     var awaitLength = 0;
     var resetRange = 0
     var reset = false
     var edgePrice = 0
     var trailing = false
-    let events = [];
 
 
     var diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
@@ -156,8 +157,7 @@ const CustomCandlestickChart = ({
 
       function _emit(datalog) {
         if (index > logStartIndex) {
-          events.push(index + " - " + datalog)
-          setEvent(datalog)
+          setEvent({ index, log: datalog })
         }
       }
 
@@ -173,26 +173,72 @@ const CustomCandlestickChart = ({
       // drawRect(ctx, { x1: x, y1: resistBoxStart, w: 10, h: resistBoxEnd-resistBoxStart }, upColor+20);
 
       // breakout
-      if (breakout == 'bullish') Mark(ctx, { x1: x, y1: 30 }, "green", 4, 1)
-      if (breakout == 'bearish') Mark(ctx, { x1: x, y1: 30 }, "red", 4, 1)
+      if (breakout == 'bullish') Mark(ctx, { x1: x, y1: 30 }, "#00ff0099", 4, 1)
+      if (breakout == 'bearish') Mark(ctx, { x1: x, y1: 30 }, "#ff000099", 4, 1)
       if (breakout == 'await') Mark(ctx, { x1: x, y1: 30 }, "#cccccc50", 4, 1)
 
-      console.log(cand.o, supportBoxEnd);
-      if (cand.c < supportBoxEnd) {
-        console.log('break out');
-        
-        // support[tradingRange] = priceCandle(cand.c, index);
-        // resist[tradingRange] = priceCandle(support[tradingRange - 1]["price"], index);
-        // UPDATE Support Resist BOXES to last range
-        // update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
-        // UPDATE Support Resist BOXES
-        // update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
-        // _emit("test")
+
+
+      index == 433 && console.log(index, hl.at(-1)?.cand?.c, lh.at(-1)?.cand?.c);
+
+      // cand.o < lh.at(-1)?.cand?.c && lhOffset > botConfig.leftValueSmall
+      if (breakout == "bearish") {
+        edgePrice = cand.o < edgePrice ? cand.o : edgePrice
+        let reversed = false
+
+        // REVERSAL
+        if (cand.o > supportBoxEnd) {
+          // resist[tradingRange] = priceCandle(support[tradingRange - 1]["price"], index);
+          // support[tradingRange] = priceCandle(lh.at(-1)?.cand?.c, index);
+          // UPDATE Support Resist BOXES
+          // update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
+          reversed = true
+          breakout = 'await'
+          _emit("REVERSED")
+          Mark(ctx, priceCandle(supportBoxEnd, index), 'yellow', candleWidth, candleWidth);
+        }
+
+
+        index == 235 && console.log(index, { hl, lh, hlOffsetRange, lhOffsetRange });
+
+
+        if (lhOffsetRange > botConfig.leftValueSmall && hlOffsetRange > botConfig.leftValueSmall &&
+          // cand.c > lh.at(-1)?.cand?.c &&
+          hl.at(-1)?.cand?.c > lh.at(-1)?.cand?.c &&
+          !reversed
+        ) {
+          Mark(ctx, priceCandle(supportBoxEnd, index), 'MediumPurple', 10, 10);
+          tradingRange += 1
+          resist[tradingRange] = priceCandle(support[tradingRange - 1]["price"], index);
+          support[tradingRange] = priceCandle(lh.at(-1)?.cand?.c, index);
+          // UPDATE Support Resist BOXES
+          update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
+          breakout = 'await'
+          lhOffsetRange = 0
+          _emit("new range")
+        }
+
+
+
       }
 
 
 
+      if (breakout == "await") {
 
+        // console.log({index, lh});
+
+
+      }
+
+
+
+      if (cand.c < supportBoxEnd && breakout == 'await') {
+        _emit('BEARISH breakout');
+        breakout = "bearish"
+        lh = []
+        hl = []
+      }
 
 
 
@@ -240,8 +286,19 @@ const CustomCandlestickChart = ({
 
 
 
+      // delay hh ll
+      if (hls[index]) hlOffset = 1
+      if (hlOffset > 0) hlOffset += 1
 
+      if (lhs[index]) lhOffset = 1
+      if (lhOffset > 0) lhOffset += 1
 
+      // delay hh ll
+      if (hls[index]) hlOffsetRange = 1
+      if (hlOffsetRange > 0) hlOffsetRange += 1
+
+      if (lhs[index]) lhOffsetRange = 1
+      if (lhOffsetRange > 0) lhOffsetRange += 1
 
 
 
@@ -355,8 +412,6 @@ const CustomCandlestickChart = ({
       //   // log("SHORT", position);
       // }
     });
-    console.log("::", events.at(-1));
-    console.log("events:::", events);
   };
 
   useEffect(() => {
