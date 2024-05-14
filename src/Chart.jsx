@@ -176,12 +176,9 @@ const CustomCandlestickChart = ({
       if (breakout == 'bullish') Mark(ctx, { x1: x, y1: 30 }, "#00ff0099", 4, 1)
       if (breakout == 'bearish') Mark(ctx, { x1: x, y1: 30 }, "#ff000099", 4, 1)
       if (breakout == 'await') Mark(ctx, { x1: x, y1: 30 }, "#cccccc50", 4, 1)
+      edgePrice = edgePrice == 0 ? cand.o : edgePrice // set inital value
 
 
-
-      index == 433 && console.log(index, hl.at(-1)?.cand?.c, lh.at(-1)?.cand?.c);
-
-      // cand.o < lh.at(-1)?.cand?.c && lhOffset > botConfig.leftValueSmall
       if (breakout == "bearish") {
         edgePrice = cand.o < edgePrice ? cand.o : edgePrice
         let reversed = false
@@ -216,6 +213,8 @@ const CustomCandlestickChart = ({
           breakout = 'await'
           lhOffsetRange = 0
           _emit("new range")
+          console.log(priceCandle(edgePrice, index));
+          Text(ctx, "edgePrice", x, priceCandle(edgePrice, index)['y1']);
         }
 
 
