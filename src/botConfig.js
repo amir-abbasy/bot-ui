@@ -1,13 +1,13 @@
 // BTC/USDT
 let botConfig = {
-  S_R_Area: 40, // 100%
+  S_R_Area: 30, // 100%
   leftValue: 100,
   rightValue: 100,
 
-  leftValueSmall: 10,
-  rightValueSmall: 10,
+  leftValueSmall: 16, //4h
+  rightValueSmall: 16, //4h
 
-  targetLoose: .5,
+  targetLoose: 0.5,
 
   // BTC
   // initialResist: 29574,
@@ -30,6 +30,5 @@ let botConfig = {
   candleWidth: 7,
   test: {},
 };
-
 
 export default botConfig;

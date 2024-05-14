@@ -1,21 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import "./App.css";
 import CustomCandlestickChart from "./Chart";
-import Pattern from "./Pattern";
-// import test_data from "./BTC.json";
-// import test_data from "./data.json";
-// import test_data from "./data_.json";
-// import test_data from "./data3.json";
-// import test_data from "./data_api.json";
-// import test_data from "./data/2022-07-15.json";
-import test_data from "./data/2023-01-01.json";
-// import test_data from "./data/2022-07-01.json"; // *
 import JsonLoader from './_fun/JsonLoader.jsx'
 
 import botConfig from "./botConfig";
 const data_offet = 0;
 const data_len = 1000; //700
 const speed = 1
+const playSpeed = 500
 
 
 import {
@@ -23,29 +14,62 @@ import {
   pivothigh,
   pivotlow,
 } from "./_fun/hhll.js";
+import { useStore } from "./store.jsx";
 
 function App() {
+  const [fullData, setFullData] = useState([]);
   const [data, setData] = useState([]);
-  const [tradeConfig, setTradeConfig] = useState({
+  const [viewConfig, setViewConfig] = useState({
     data_offet,
     data_len,
-    speed
+    speed,
+    play: false
   });
 
+  const { events, activeCand, setActiveCand } = useStore()
 
-  const modifyData = ohlcv_data => ohlcv_data.slice(tradeConfig.data_offet, tradeConfig.data_len).map((_, k) => ({
-      t: _[0],
-      o: _[1],
-      h: _[2],
-      l: _[3],
-      c: _[4],
-      v: _[5],
-    }));
+
+  const modifyData = ohlcv_data => ohlcv_data.slice(viewConfig.data_offet, viewConfig.data_len).map((_, k) => ({
+    t: _[0],
+    o: _[1],
+    h: _[2],
+    l: _[3],
+    c: _[4],
+    v: _[5],
+  }));
 
 
   useEffect(() => {
-    setData(modifyData(data));
-  }, [tradeConfig.data_len, tradeConfig.data_offet]);
+    //   setData(modifyData(fullData));
+    setData(prevData => modifyData(fullData));
+  }, [viewConfig.data_len, viewConfig.data_offet]);
+
+
+
+  useEffect(() => {
+    let animationFrameId = null;
+    let lastUpdate = Date.now();
+
+    const updateData = () => {
+      const now = Date.now();
+      if (now - lastUpdate >= playSpeed) {
+        lastUpdate = now;
+        setViewConfig(prev => ({ ...prev, data_len: parseInt(prev.data_len) + prev.speed }));
+        setData(prevData => modifyData(fullData));
+      }
+      animationFrameId = requestAnimationFrame(updateData);
+    };
+
+    if (viewConfig.play) {
+      updateData();
+    } else {
+      cancelAnimationFrame(animationFrameId);
+    }
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [viewConfig.play, fullData]);
+
+
 
 
   // HORIZONTAL SCROLL
@@ -114,35 +138,35 @@ function App() {
   //   </div>
   // );
 
-
-
   return (
     <div>
-
       <div className="dashboard">
-        <JsonLoader setJsonData={json => setData(modifyData(json))} />
+        <JsonLoader setJsonData={json => {
+          setData(modifyData(json))
+          setFullData(json)
+        }} />
         <input
-          value={tradeConfig.data_offet}
+          value={viewConfig.data_offet}
           placeholder="*"
           onChange={(e) =>
-            setTradeConfig({ ...tradeConfig, data_offet: e.target.value })
+            setViewConfig({ ...viewConfig, data_offet: e.target.value })
           }
         />
         <input
-          value={tradeConfig.data_len}
+          value={viewConfig.data_len}
           placeholder="*"
           onChange={(e) =>
-            setTradeConfig({
-              ...tradeConfig,
+            setViewConfig({
+              ...viewConfig,
               data_len: e.target.value == "" ? 1000 : e.target.value,
             })
           }
         />
         <button
           onClick={() => {
-            setTradeConfig({
-              ...tradeConfig,
-              data_len: parseInt(tradeConfig.data_len) - tradeConfig.speed,
+            setViewConfig({
+              ...viewConfig,
+              data_len: parseInt(viewConfig.data_len) - viewConfig.speed,
             });
           }}
           style={{ paddingLeft: 40, paddingRight: 40 }}
@@ -151,9 +175,9 @@ function App() {
         </button>
         <button
           onClick={() => {
-            setTradeConfig({
-              ...tradeConfig,
-              data_len: parseInt(tradeConfig.data_len) + tradeConfig.speed,
+            setViewConfig({
+              ...viewConfig,
+              data_len: parseInt(viewConfig.data_len) + viewConfig.speed,
             });
           }}
           style={{ paddingLeft: 40, paddingRight: 40 }}
@@ -162,17 +186,16 @@ function App() {
         </button>
 
 
-        {[1, 5, 10, 100, 500].map((spd, idx) => {
+        {[1, 5, 10, 20, 100, 500].map((spd, idx) => {
           return <button key={'speed_' + idx}
-            onClick={() => setTradeConfig({ ...tradeConfig, speed: spd })}
-            style={{ paddingLeft: 10, paddingRight: 10, color: tradeConfig.speed == spd ? 'black' : '#aaa' }}
+            onClick={() => setViewConfig({ ...viewConfig, speed: spd })}
+            style={{ paddingLeft: 10, paddingRight: 10, color: viewConfig.speed == spd ? 'black' : '#aaa' }}
           >{spd}</button>
         })}
         <button
           onClick={() => {
-            console.log(data.length);
-            setTradeConfig({
-              ...tradeConfig,
+            setViewConfig({
+              ...viewConfig,
               data_len,
             });
           }}
@@ -180,7 +203,44 @@ function App() {
         >
           reset
         </button>
+
+        <button
+          onClick={() => {
+            setViewConfig(prev => ({ ...prev, play: !prev.play }));
+          }}
+          style={{ paddingLeft: 10, paddingRight: 10 }}
+        >
+          {viewConfig.play ? 'pause' : 'play'}
+        </button>
+
       </div>
+
+       <div className="logs">
+        {events.map((evt, index) => {
+          return <div key={'evnt_' + index}>
+            <p className="logs_txt">{index + 1}- {evt}</p>
+          </div>
+        })}
+      </div> 
+
+      {activeCand && <div style={{
+        position: 'absolute',
+        backgroundColor: '#fff',
+        // left: activeCand.pos.x * 10,
+        top: activeCand.pos.y,
+        right: 0,
+        padding: 2
+      }}>
+        <p className="bold">{activeCand.index}</p>
+        <p className="bold">{formatRailwayTime(activeCand.cand.t)}</p>
+        <p className="text-sm">{activeCand.cand.o}</p>
+        <p className="text-sm">{activeCand.cand.h}</p>
+        <p className="text-sm">{activeCand.cand.l}</p>
+        <p className="text-sm">{activeCand.cand.c}</p>
+      </div>}
+
+
+
       <div className="horizontal-scroll-container" ref={scrollableRef}>
         <CustomCandlestickChart
           data={data}
@@ -196,9 +256,27 @@ function App() {
           initialResist={Math.max(...initialResistAr)}
           initialSupport={Math.min(...initialSupportAr)}
         />
+
+        {/* <AnimatedChart
+          data={data}
+        /> */}
       </div>
     </div>
   );
 }
 
+
 export default App;
+
+
+
+
+
+function formatRailwayTime(timestamp) {
+  const date = new Date(timestamp);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const formattedHours = hours < 10 ? '0' + hours : hours;
+  const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+  return `${formattedHours}:${formattedMinutes}`;
+}
