@@ -1,20 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import CustomCandlestickChart from "./Chart";
 import JsonLoader from './_fun/JsonLoader.jsx'
-
 import botConfig from "./botConfig";
-const data_offet = 0;
-const data_len = 875; //700
-const speed = 1
-const playSpeed = 500
-
-
 import {
   findHigherHighsAndLowerLows,
   pivothigh,
   pivotlow,
 } from "./_fun/hhll.js";
 import { useStore } from "./store.jsx";
+
+const data_offet = 0;
+const data_len = 170; 
+const speed = 1
+const playSpeed = 500
+
 
 function App() {
   const [fullData, setFullData] = useState([]);
