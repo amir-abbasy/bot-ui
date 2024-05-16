@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import dates from '../data/data'
 
 const JsonLoader = ({ setJsonData = () => null }) => {
-  const [selectedDate, setSelectedDate] = useState('2022-02-10');
+  const [selectedDate, setSelectedDate] = useState('2022-05-11');
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
     // Assuming your JSON files are in the data folder
@@ -17,9 +18,27 @@ const JsonLoader = ({ setJsonData = () => null }) => {
     };
 
     fetchData();
+
+    document.addEventListener('keydown', keyPress);
+    return () => {
+      document.removeEventListener('keydown', keyPress);
+    }
+
+
   }, [selectedDate]);
 
-  return (
+  const keyPress = (e) => {
+    if (e.which == 39) {
+      setSelectedDate(dates[index + 1])
+      setIndex(index + 1)
+    }
+    if (e.which == 37) {
+      setSelectedDate(dates[index - 1])
+      setIndex(index - 1)
+    }
+  }
+
+  return (<>
     <select
       id="dateSelect"
       value={selectedDate}
@@ -29,6 +48,7 @@ const JsonLoader = ({ setJsonData = () => null }) => {
         return <option value={date} key={key}>{date}</option>
       })}
     </select>
+  </>
   );
 };
 

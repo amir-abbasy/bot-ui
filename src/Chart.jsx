@@ -188,9 +188,9 @@ const CustomCandlestickChart = ({
         // REVERSAL
         if (cand.o > support[tradingRange]["price"]) {
           if (Math.abs(change) < 5) {
-            support[tradingRange] = priceCandle(edgePrice, index);
+            // support[tradingRange] = priceCandle(edgePrice, index);
             // UPDATE Support 
-            update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
+            // update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
           }
           reversed = true
           breakout = 'await'
@@ -199,8 +199,8 @@ const CustomCandlestickChart = ({
           Text(ctx, change.toFixed() + '%', x, priceCandle(edgePrice, index)['y1'], 'yellow');
         }
 
-        if (lhOffsetRange > botConfig.leftValueSmall && hlOffsetRange > botConfig.leftValueSmall &&
-          hl.at(-1)?.c > lh.at(-1)?.c &&
+        if (lhOffsetRange > botConfig.leftValueSmall &&
+          ((hlOffsetRange > botConfig.leftValueSmall && hl.at(-1)?.c > lh.at(-1)?.c) || lh.at(-1)?.c > lh.at(-2)?.c)  &&
           !reversed
         ) {
           Mark(ctx, priceCandle(supportBoxEnd, index), 'MediumPurple', 10, 10);
@@ -239,20 +239,18 @@ const CustomCandlestickChart = ({
         let reversed = false
         let change = percentageChange(resistBoxEnd, edgePrice) // %
 
-        console.log(edgePrice);
-
         // REVERSAL
         if (cand.o < resist[tradingRange]["price"]) {
           if (Math.abs(change) < 5) {
-            resist[tradingRange] = priceCandle(edgePrice, index);
+            // resist[tradingRange] = priceCandle(edgePrice, index);
             // UPDATE Support 
-            update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
+            // update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
           }
           reversed = true
           breakout = 'await'
           _emit("REVERSED")
           Mark(ctx, priceCandle(edgePrice, index), 'yellow', candleWidth, candleWidth);
-          // Text(ctx, change.toFixed() + '%', x, priceCandle(edgePrice, index)['y1'], 'yellow');
+          Text(ctx, change.toFixed() + '%', x, priceCandle(edgePrice, index)['y1'], 'yellow');
         }
 
         if (lhOffsetRange > botConfig.leftValueSmall && hlOffsetRange > botConfig.leftValueSmall &&
@@ -262,11 +260,11 @@ const CustomCandlestickChart = ({
           Mark(ctx, priceCandle(resistBoxEnd, index), 'MediumPurple', 10, 10);
           tradingRange += 1
 
-          // if (Math.abs(change) > 10) {
-          //   support[tradingRange] = priceCandle(hl.at(-1).c, index);
-          // } else {
-          // }
-          support[tradingRange] = priceCandle(resist[tradingRange - 1]["price"], index);
+          if (Math.abs(change) > 10) {
+            support[tradingRange] = priceCandle(lh.at(-1).c, index);
+          } else {
+            support[tradingRange] = priceCandle(resist[tradingRange - 1]["price"], index);
+          }
           resist[tradingRange] = priceCandle(edgePrice, index);
           // UPDATE Support Resist
           update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
@@ -285,7 +283,7 @@ const CustomCandlestickChart = ({
 
       if (cand.o < supportBoxEnd && breakout == 'await') {
         _emit('BEARISH breakout');
-        // breakout = "bearish"
+        breakout = "bearish"
         lh = []
         hl = []
       }
