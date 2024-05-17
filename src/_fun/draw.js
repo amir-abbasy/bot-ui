@@ -1,5 +1,6 @@
 import botConfig from "../botConfig";
 import { calculatePercentage } from "./helpers";
+// https://unicode.org/charts/nameslist/n_2190.html
 
 const drawTrendLineObj = (ctx, obj, color = "blue") => {
   // Support Resist
@@ -60,7 +61,8 @@ const drawRect = (ctx, obj, color = "blue") => {
 //   ctx.fillText(text, obj.x1, obj.y1);
 // };
 
-const Text = (ctx, text = "no text", x, y, color = "#fff") => {
+const Text = (ctx, text = "no text", x, y, color = "#fff", font = "12px Arial") => {
+  ctx.font = font
   ctx.fillStyle = color;
   ctx.fillText(text, x, y);
 };
