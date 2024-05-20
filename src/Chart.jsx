@@ -67,7 +67,6 @@ const CustomCandlestickChart = ({
 
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     // Replace these values with your desired dimensions
     const chartWidth = window.innerWidth;
     const chartHeight = canvasBox.height // window.innerHeight;
@@ -106,9 +105,6 @@ const CustomCandlestickChart = ({
     var hlOffsetRange = 0;
     var lhOffsetRange = 0;
     var position_span = 0;
-    var awaitLength = 0;
-    var resetRange = 0
-    var reset = false
     var edgePrice = 0
     var trailing = false
 
@@ -117,10 +113,11 @@ const CustomCandlestickChart = ({
     var supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
     resist[tradingRange]["diff"] = diff;
     support[tradingRange]["diff"] = diff;
-    var resistBoxStart_plot = resist[tradingRange]["y1"] + supportResistArea / 2;
-    var resistBoxEnd_plot = resist[tradingRange]["y1"] - supportResistArea / 2;
-    var supportBoxStart_plot = support[tradingRange]["y1"] - supportResistArea / 2;
-    var supportBoxEnd_plot = support[tradingRange]["y1"] + supportResistArea / 2;
+
+    // var resistBoxStart_plot = resist[tradingRange]["y1"] + supportResistArea / 2;
+    // var resistBoxEnd_plot = resist[tradingRange]["y1"] - supportResistArea / 2;
+    // var supportBoxStart_plot = support[tradingRange]["y1"] - supportResistArea / 2;
+    // var supportBoxEnd_plot = support[tradingRange]["y1"] + supportResistArea / 2;
 
     var diff = resist[tradingRange]["price"] - support[tradingRange]["price"];
     var supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
@@ -144,6 +141,8 @@ const CustomCandlestickChart = ({
 
     // Draw the candlestick chart
     data.forEach((cand, index) => {
+      if (index < initalRangeStart) return
+
       const x = padding + index * candleWidth;
       const yHigh = padding + (1 - (cand.h - minPrice) / priceRange) * chartHeight;
       const yLow = padding + (1 - (cand.l - minPrice) / priceRange) * chartHeight;
@@ -152,19 +151,18 @@ const CustomCandlestickChart = ({
 
       const spread = percentageChange(support[tradingRange]?.["price"], resist[tradingRange]["price"]);
 
-      function ENTRY(type = "LONG") {
+      function ENTRY(type = "LONG", tag = null) {
         if (isOrderPlaced) return
-        // log("ENTRY "+type, yLow, index, cand.o);
         positionTmp["entryPrice"] = cand.o;
         positionTmp["x1"] = x;
         positionTmp["y1"] = yOpen;
         positionTmp["type"] = type;
         isOrderPlaced = true;
-        Text(ctx, type, x, yOpen - 100, 'white');
+        Text(ctx, tag ?? type, x, yOpen - 100, 'white');
+        _emit(tag)
       }
-      function EXIT() {
+      function EXIT(tag = null) {
         if (!isOrderPlaced) return
-        // log("EXIT", yLow, index, cand.o);
         positionTmp["exitPrice"] = cand.o;
         positionTmp["x2"] = x;
         positionTmp["y2"] = yOpen;
@@ -173,11 +171,13 @@ const CustomCandlestickChart = ({
         isOrderPlaced = false;
         position_span = 0;
         // Text(ctx, "EXIT", x, yOpen - 100, 'white');
+        _emit(tag)
       }
 
 
 
       function _emit(datalog) {
+        if (!datalog) return
         if (index > logStartIndex) {
           setEvent({ index, log: datalog })
         }
@@ -265,21 +265,21 @@ const CustomCandlestickChart = ({
           Text(ctx, '↺', x, priceCandle(cand.o, index)['y1'], 'red', '30px Arial ');
         }
 
+
         // LONG ENTRIES 
         if (cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart) {
-          ENTRY()
-        } else if (cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart) {
-          EXIT()
+          ENTRY(undefined, 'long')
+        } else if ((cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart) && positionTmp["type"] == 'LONG') {
+          EXIT('exit long')
         }
 
 
         // SHORT ENTRIES 
         if (cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart) {
-          // ENTRY('SHORT')
-        } else if (cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart) {
-          // EXIT()
+          ENTRY('SHORT')
+        } else if ((cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart) && positionTmp["type"] == 'SHORT') {
+          EXIT('exit  short, ' + positionTmp["type"])
         }
-
 
       }
 
@@ -342,7 +342,7 @@ const CustomCandlestickChart = ({
         lh = []
         hl = []
         EXIT()
-        ENTRY("SHORT")
+        ENTRY("SHORT", 'breakout short entry')
       }
 
 
@@ -352,7 +352,7 @@ const CustomCandlestickChart = ({
         lh = []
         hl = []
         EXIT()
-        ENTRY()
+        ENTRY(undefined, 'breakout long entry')
       }
 
 
@@ -482,7 +482,7 @@ const CustomCandlestickChart = ({
 
     // DRAW POSITIONS
     // drawTrendLine(ctx, draw);
-    var profit = 0;
+    var pnl = 0;
     positions.forEach((position, idx) => {
       // if (position["type"] == "LONG") {
       drawPosition(ctx, position, position["type"]);
@@ -511,7 +511,7 @@ const CustomCandlestickChart = ({
         pl = l_entry_size - l_exit_size - (amount_entry_fee + amount_exit_fee);
         var diff = percentageChange(position.exitPrice, position.entryPrice);
       }
-      profit += pl;
+      pnl += pl;
 
       ctx.font = "16px Arial";
       // entryPrice exitPrice
@@ -519,7 +519,7 @@ const CustomCandlestickChart = ({
       ctx.fillText(pl.toFixed(2), 20, (idx + 1) * 30);
       ctx.fillText("(" + diff.toFixed(2) + "%)", 70, (idx + 1) * 30);
       ctx.fillStyle = "#6f03fc";
-      ctx.fillText(profit.toFixed(2), 160, (idx + 1) * 30);
+      ctx.fillText(pnl.toFixed(2), 160, (idx + 1) * 30);
       // }
 
       // if (position["type"] == "SHORT") {
