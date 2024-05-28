@@ -1,11 +1,11 @@
 // BTC/USDT
 let botConfig = {
-  S_R_Area: 30, // 100%
+  S_R_Area: 25, // 100%
   leftValue: 100,
   rightValue: 100,
 
-  leftValueSmall: 16, //4h
-  rightValueSmall: 16, //4h
+  leftValueSmall: 21, //4h
+  rightValueSmall: 21, //4h
 
   targetLoose: 0.5,
 

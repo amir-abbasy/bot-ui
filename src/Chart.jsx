@@ -209,7 +209,7 @@ const CustomCandlestickChart = ({
 
         // REVERSAL
         if (cand.o > support[tradingRange]["price"]) {
-          if (Math.abs(change) < 1) {
+          if (Math.abs(change) < spread) {
             support[tradingRange] = priceCandle(edgePrice, index);
             // UPDATE Support 
             update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
@@ -222,8 +222,9 @@ const CustomCandlestickChart = ({
           EXIT()
           Mark(ctx, priceCandle(supportBoxEnd, index), 'yellow', candleWidth, candleWidth);
           Text(ctx, change.toFixed(1) + '%', x, priceCandle(edgePrice, index)['y1'], 'yellow');
+          ENTRY()
         }
-
+        // hl > lh || lh > lh-1 
         if (lhOffsetRange > botConfig.leftValueSmall &&
           ((hlOffsetRange > botConfig.leftValueSmall && hl.at(-1)?.c > lh.at(-1)?.c) || lh.at(-1)?.c > lh.at(-2)?.c) &&
           !reversed
@@ -231,11 +232,13 @@ const CustomCandlestickChart = ({
           Mark(ctx, priceCandle(supportBoxEnd, index), 'MediumPurple', 10, 10);
           tradingRange += 1
 
-          if (Math.abs(change) > 10) {
+          if (Math.abs(change) > spread) {
             resist[tradingRange] = priceCandle(hl.at(-1).c, index);
           } else {
             resist[tradingRange] = priceCandle(support[tradingRange - 1]["price"], index);
           }
+          resist[tradingRange] = priceCandle(hl.at(-1).c, index);
+
           support[tradingRange] = priceCandle(lh.at(-1)?.c, index);
           // UPDATE Support Resist
           update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
@@ -252,33 +255,53 @@ const CustomCandlestickChart = ({
 
 
       if (breakout == "await") {
-        if (lh.at(-1)?.c > lh.at(-2)?.c && lhs[index]) {
-          Text(ctx, '↗', x, priceCandle(cand.o, index)['y1'], 'green', '30px Arial ');
-        }
+        // if (lh.at(-1)?.c > lh.at(-2)?.c && lhs[index]) {
+        //   Text(ctx, '↗', x, priceCandle(cand.o, index)['y1'], 'green', '30px Arial ');
+        // }
 
 
         // RE-TEST
-        if (hl.at(-1)?.c < hl.at(-2)?.c && !hl.some(_ => _.c > resistBoxStart) && hlOffsetRange == botConfig.leftValueSmall) {
-          Text(ctx, '↺', x, priceCandle(cand.o, index)['y1'], 'green', '30px Arial ');
-        }
-        if (lh.at(-1)?.c < lh.at(-2)?.c && !lh.some(_ => _.c < supportBoxStart) && lhOffsetRange == botConfig.leftValueSmall) {
-          Text(ctx, '↺', x, priceCandle(cand.o, index)['y1'], 'red', '30px Arial ');
-        }
+        // if (hl.at(-1)?.c < hl.at(-2)?.c && !hl.some(_ => _.c > resistBoxStart) && hlOffsetRange == botConfig.leftValueSmall) {
+        //   Text(ctx, '↺', x, priceCandle(cand.o, index)['y1'], 'green', '30px Arial ');
+        // }
+        // if (lh.at(-1)?.c < lh.at(-2)?.c && !lh.some(_ => _.c < supportBoxStart) && lhOffsetRange == botConfig.leftValueSmall) {
+        //   Text(ctx, '↺', x, priceCandle(cand.o, index)['y1'], 'red', '30px Arial ');
+        // }
+
+        // var reversalCandle = index > 1 ? data[index - 1]["o"] < cand.o : false; // confirm exit
+        var reversalCandle = index > 1 ? data[index - 1]["c"] > cand.o : false; // confirm exit
+
+
+
+        var r_b_s_w_p_s = resistBoxStart - calculatePercentage(resistBoxStart - supportBoxStart, position_span * botConfig.targetLoose); // resist_box_start_with_position_span
+        isOrderPlaced && positionTmp["type"] == "LONG" && Mark(ctx, priceCandle(r_b_s_w_p_s, index), '#cccccc80', 1, 1);
+
+        var short_r_b_s_w_p_s = supportBoxStart + calculatePercentage(resistBoxStart - supportBoxStart, position_span * botConfig.targetLoose); // resist_box_start_with_position_span
+        isOrderPlaced && positionTmp["type"] == "SHORT" && Mark(ctx, priceCandle(short_r_b_s_w_p_s, index), '#cccccc40', 1, 1);
+
 
 
         // LONG ENTRIES 
         if (cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart) {
           ENTRY(undefined, 'long')
-        } else if ((cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart) && positionTmp["type"] == 'LONG') {
+        } else if ((cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart || cand.o > r_b_s_w_p_s || data[index-1]['h'] > r_b_s_w_p_s) && positionTmp["type"] == 'LONG' && reversalCandle ) {
           EXIT('exit long')
+          if(cand.o > r_b_s_w_p_s || data[index-1]['c'] > r_b_s_w_p_s){
+            resist[tradingRange] = priceCandle(cand.o, index);
+            update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
+          }
         }
 
 
         // SHORT ENTRIES 
         if (cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart) {
           ENTRY('SHORT')
-        } else if ((cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart) && positionTmp["type"] == 'SHORT') {
+        } else if ((cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart || cand.o < short_r_b_s_w_p_s || data[index-1]['l'] < short_r_b_s_w_p_s) && positionTmp["type"] == 'SHORT' && !reversalCandle) {
           EXIT('exit  short, ' + positionTmp["type"])
+          if(cand.o < short_r_b_s_w_p_s){
+            support[tradingRange] = priceCandle(cand.o, index);
+            update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
+          }
         }
 
       }
@@ -290,9 +313,10 @@ const CustomCandlestickChart = ({
         let reversed = false
         let change = percentageChange(resistBoxEnd, edgePrice) // %
 
+
         // REVERSAL
         if (cand.o < resist[tradingRange]["price"]) {
-          if (Math.abs(change) < 1) {
+          if (Math.abs(change) < spread) {
             resist[tradingRange] = priceCandle(edgePrice, index);
             // UPDATE Support 
             update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
@@ -305,6 +329,7 @@ const CustomCandlestickChart = ({
           EXIT()
           Mark(ctx, priceCandle(edgePrice, index), 'yellow', candleWidth, candleWidth);
           Text(ctx, change.toFixed(1) + '%', x, priceCandle(edgePrice, index)['y1'], 'yellow');
+          ENTRY('SHORT')
         }
 
         if (lhOffsetRange > botConfig.leftValueSmall && hlOffsetRange > botConfig.leftValueSmall &&
@@ -314,12 +339,13 @@ const CustomCandlestickChart = ({
           Mark(ctx, priceCandle(resistBoxEnd, index), 'MediumPurple', 10, 10);
           tradingRange += 1
 
-          if (Math.abs(change) > 10) {
+          if (Math.abs(change) > spread) {
             support[tradingRange] = priceCandle(lh.at(-1).c, index);
+            resist[tradingRange] = priceCandle(hl.at(-1).c, index);
           } else {
             support[tradingRange] = priceCandle(resist[tradingRange - 1]["price"], index);
+            resist[tradingRange] = priceCandle(edgePrice, index);
           }
-          resist[tradingRange] = priceCandle(edgePrice, index);
           // UPDATE Support Resist
           update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
           EXIT()
@@ -327,7 +353,7 @@ const CustomCandlestickChart = ({
           lhOffsetRange = 0
           _emit("new range")
 
-          Text(ctx, change.toFixed(1) + '%', x, priceCandle(edgePrice, index)['y1']);
+          Text(ctx, `${change.toFixed(1)}% ${spread}`, x, priceCandle(edgePrice, index)['y1']);
         }
 
       }
@@ -343,6 +369,7 @@ const CustomCandlestickChart = ({
         hl = []
         EXIT()
         ENTRY("SHORT", 'breakout short entry')
+
       }
 
 
@@ -353,6 +380,7 @@ const CustomCandlestickChart = ({
         hl = []
         EXIT()
         ENTRY(undefined, 'breakout long entry')
+
       }
 
 
@@ -413,6 +441,8 @@ const CustomCandlestickChart = ({
 
       if (lhs[index]) lhOffsetRange = 1
       if (lhOffsetRange > 0) lhOffsetRange += 1
+
+      if (isOrderPlaced) position_span += 1;
 
 
 

@@ -17,3 +17,12 @@ if false breakout
 # close position
 - 
 
+2024
+
+
+ - don't take long after bearish breakeout
+ - after breakout if open cross the last hl/lh take position
+ - retest. if  lh > last lh or  hl < last hl  
+ - await 5th hl, lh retest if not price touch support or resist
+ - after reversal wait for new  hl, lh and update  support or resist as  hl, lh
+

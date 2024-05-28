@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import dates from '../data/data'
 
 const JsonLoader = ({ setJsonData = () => null }) => {
-  const [selectedDate, setSelectedDate] = useState('2022-05-11');
+  const [selectedDate, setSelectedDate] = useState('2022-03-22');
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -24,8 +24,8 @@ const JsonLoader = ({ setJsonData = () => null }) => {
       document.removeEventListener('keydown', keyPress);
     }
 
-
   }, [selectedDate]);
+
 
   const keyPress = (e) => {
     if (e.which == 39) {
@@ -38,11 +38,15 @@ const JsonLoader = ({ setJsonData = () => null }) => {
     }
   }
 
+
   return (<>
     <select
       id="dateSelect"
       value={selectedDate}
-      onChange={(event) => setSelectedDate(event.target.value)}
+      onChange={(event) => {
+        setIndex(dates.indexOf(event.target.value))
+        setSelectedDate(event.target.value)
+      }}
     >
       {dates.map((date, key) => {
         return <option value={date} key={key}>{date}</option>
