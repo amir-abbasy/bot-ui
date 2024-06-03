@@ -70,7 +70,22 @@ function calculateRSI(prices, period = 14) {
   return rsiArray;
 }
 
-function calculateSMA(prices, period = 14) {
+
+
+const calculateRSIMA = (rsi, period = 14) => {
+  const ma = [];
+  for (let i = 0; i < rsi.length; i++) {
+    if (i < period - 1) {
+      ma.push(null);
+    } else {
+      const avg = rsi.slice(i - period + 1, i + 1).reduce((acc, val) => acc + val, 0) / period;
+      ma.push(avg);
+    }
+  }
+  return ma;
+};
+
+function calculateSMA_(prices, period = 14) {
   if (prices.length < period) {
     throw new Error("Not enough prices to calculate SMA.");
   }
@@ -87,6 +102,6 @@ function calculateSMA(prices, period = 14) {
 
 
 
-export { calculatePercentage, percentageChange, calculateFee, log, calculateRSI, calculateSMA };
+export { calculatePercentage, percentageChange, calculateFee, log, calculateRSI, calculateRSIMA };
 
 

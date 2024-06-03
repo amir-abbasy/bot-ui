@@ -6,15 +6,15 @@ import {
   drawRect,
   Mark,
   Text
-} from "./_fun/draw";
+} from "./_fun/draw.js";
 import {
   calculatePercentage,
   percentageChange,
   calculateFee,
   log,
   calculateRSI,
-} from "./_fun/helpers";
-import botConfig from "./botConfig";
+} from "./_fun/helpers.js";
+import botConfig from "./botConfig.js";
 import { useStore } from "./store.jsx";
 
 const upColor = "#089981";
@@ -268,7 +268,7 @@ const CustomCandlestickChart = ({
         // }
 
         // var reversalCandle = index > 1 ? data[index - 1]["o"] < cand.o : false; // confirm exit
-        var reversalCandle = index > 1 ? data[index - 1]["c"] > cand.o : false; // confirm exit
+        var reversalCandle = data[index - 1]["o"] > data[index - 1]["c"]  // confirm exit
 
 
 
@@ -361,7 +361,7 @@ const CustomCandlestickChart = ({
 
 
 
-      if (cand.o < supportBoxEnd && breakout == 'await') {
+      if (data[index-1].o < supportBoxEnd && breakout == 'await') {
         _emit('BEARISH breakout');
         breakout = "bearish"
         lh = []
@@ -372,7 +372,7 @@ const CustomCandlestickChart = ({
       }
 
 
-      if (cand.o > resistBoxEnd && breakout == 'await') {
+      if (data[index-1].o > resistBoxEnd && breakout == 'await') {
         _emit('BULLISH breakout');
         breakout = "bullish"
         lh = []

@@ -6,15 +6,16 @@ import {
   drawRect,
   Mark,
   Text
-} from "./_fun/draw";
+} from "./_fun/draw.js";
 import {
   calculatePercentage,
   percentageChange,
   calculateFee,
   log,
   calculateRSI,
-} from "./_fun/helpers";
-import botConfig from "./botConfig";
+  calculateRSIMA
+} from "./_fun/helpers.js";
+import botConfig from "./botConfig.js";
 import { useStore } from "./store.jsx";
 
 const upColor = "#089981";
@@ -35,6 +36,7 @@ const CustomCandlestickChart = ({
   initalRangeStart,
   initialResist,
   initialSupport,
+  closes
 }) => {
   const canvasRef = useRef(null);
   const { setActiveCand, setEvent } = useStore()
@@ -106,6 +108,7 @@ const CustomCandlestickChart = ({
     var position_span = 0;
     var edgePrice = 0
     var trailing = false
+    let lastX = 0
 
 
     var diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
@@ -136,6 +139,7 @@ const CustomCandlestickChart = ({
       supportBoxEnd = support - supportResistArea / 2;
     }
 
+
     // const prices = data.map(_ => _.o)
 
     // Draw the candlestick chart
@@ -151,6 +155,7 @@ const CustomCandlestickChart = ({
       const spread = percentageChange(support[tradingRange]?.["price"], resist[tradingRange]["price"]);
 
       function ENTRY(type = "LONG", tag = null) {
+
         if (isOrderPlaced) return
         positionTmp["entryPrice"] = cand.o;
         positionTmp["x1"] = x;
@@ -185,6 +190,12 @@ const CustomCandlestickChart = ({
       var day = new Date(cand["t"]).getDay();
       var isHolyday = false // day == 5 || day == 6; // SAT, SUN
       // if (isHolyday) Mark(ctx, { x1: x, y1: 30 }, "yellow", 4, 1)
+      const RSI = calculateRSI(closes, botConfig.leftValueSmall)
+      const RSI_SMA = calculateRSIMA(RSI, botConfig.leftValueSmall)
+      console.log(index, RSI[index], RSI_SMA[index]);
+      if( RSI_SMA[index] > RSI[index])Mark(ctx, { x1: x, y1: 100, w: 10, h: 10 }, 'pink', candleWidth, 1);
+
+
       // S & R
       Mark(ctx, priceCandle(resistBoxEnd, index), upColor + 40, candleWidth, 1);
       Mark(ctx, priceCandle(resistBoxStart, index), upColor + 90, candleWidth, 1);
@@ -283,9 +294,9 @@ const CustomCandlestickChart = ({
         // LONG ENTRIES 
         if (cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart) {
           ENTRY(undefined, 'long')
-        } else if ((cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart || cand.o > r_b_s_w_p_s || data[index-1]['h'] > r_b_s_w_p_s) && positionTmp["type"] == 'LONG' && reversalCandle ) {
+        } else if ((cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart || cand.o > r_b_s_w_p_s || data[index - 1]['h'] > r_b_s_w_p_s) && positionTmp["type"] == 'LONG' && reversalCandle) {
           EXIT('exit long')
-          if(cand.o > r_b_s_w_p_s || data[index-1]['c'] > r_b_s_w_p_s){
+          if (cand.o > r_b_s_w_p_s || data[index - 1]['c'] > r_b_s_w_p_s) {
             resist[tradingRange] = priceCandle(cand.o, index);
             update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
           }
@@ -295,13 +306,14 @@ const CustomCandlestickChart = ({
         // SHORT ENTRIES 
         if (cand.o > resistBoxStart || data.at(index - 1).h > resistBoxStart) {
           ENTRY('SHORT')
-        } else if ((cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart || cand.o < short_r_b_s_w_p_s || data[index-1]['l'] < short_r_b_s_w_p_s) && positionTmp["type"] == 'SHORT' && !reversalCandle) {
+        } else if ((cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart || cand.o < short_r_b_s_w_p_s || data[index - 1]['l'] < short_r_b_s_w_p_s) && positionTmp["type"] == 'SHORT' && !reversalCandle) {
           EXIT('exit  short, ' + positionTmp["type"])
-          if(cand.o < short_r_b_s_w_p_s){
+          if (cand.o < short_r_b_s_w_p_s) {
             support[tradingRange] = priceCandle(cand.o, index);
             update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
           }
         }
+        
 
       }
 
@@ -446,7 +458,7 @@ const CustomCandlestickChart = ({
 
 
 
-      // // High Low shadow
+      // High Low shadow
       ctx.beginPath();
       ctx.moveTo(x, yHigh);
       ctx.lineTo(x, yLow);
@@ -498,16 +510,51 @@ const CustomCandlestickChart = ({
       // line
       // index == 50 && draw.push(x, yHigh);
       // index == 150 && draw.push(x, yHigh);
+
+
+      // RSI
+
+      // const RSI = calculateRSI(closes)
+      // ctx.beginPath();
+      // ctx.moveTo(x, yClose);
+
+      // if (index > 1) {
+      //   let line = priceCandle(RSI[index], index)
+      //   let linePrev = priceCandle(RSI[index - 1], index - 1)
+      //   // drawTrendLineObj(ctx, { x1: linePrev.x1, y1: linePrev.y1, x2: line.x1, y2: line.y1 }, '#fff')
+
+      //   const xc = (line.x1 + linePrev.x1) / 2;
+      //   const yc = (line.y1+linePrev.y1) / 2;
+
+      //   ctx.quadraticCurveTo(
+      //     lastX,
+      //     RSI[index],
+      //     // xc,
+      //     // yc,
+      //     lastX,
+      //     RSI[index - 1],
+      //   );
+
+      //   ctx.strokeStyle = '#fff';
+      //   ctx.stroke();
+      //   lastX = x
+
+      // }
+      // const lastPointX = x
+      // const lastPointY = yClose;
+      // ctx.quadraticCurveTo(lastPointX, lastPointY, lastPointX, lastPointY);
+
     }); // END CANDLE LOOP
 
     // DRAW SUPPORT & RESIST
-    0 && support.forEach((s_or_r, idx) => {
-      // Initial Resist
-      drawTrendLineObj(ctx, support[idx], downColor);
-      // Initial Support
-      drawTrendLineObj(ctx, resist[idx], upColor);
-      // log(support[idx]);
-    });
+
+    // false && support.forEach((s_or_r, idx) => {
+    //   // Initial Resist
+    //   drawTrendLineObj(ctx, support[idx], downColor);
+    //   // Initial Support
+    //   drawTrendLineObj(ctx, resist[idx], upColor);
+    //   // log(support[idx]);
+    // });
 
     // DRAW POSITIONS
     // drawTrendLine(ctx, draw);
@@ -555,7 +602,13 @@ const CustomCandlestickChart = ({
       //   // log("SHORT", position);
       // }
     });
+
   };
+
+
+
+
+
 
   useEffect(() => {
     drawCandlestickChart();
@@ -578,3 +631,25 @@ const CustomCandlestickChart = ({
 };
 
 export default CustomCandlestickChart;
+
+
+
+// // Draw the smooth closing price line
+// context.beginPath();
+// context.moveTo(padding + candleWidth / 2, scaleY(candlestickData[0].close));
+// for (let i = 1; i < candlestickData.length - 1; i++) {
+//   const xc = (padding + i * (candleWidth ) + padding + (i + 1) * (candleWidth )) / 2;
+//   const yc = (scaleY(candlestickData[i].close) + scaleY(candlestickData[i + 1].close)) / 2;
+//   context.quadraticCurveTo(
+//     padding + i * (candleWidth),
+//     scaleY(candlestickData[i].close),
+//     xc,
+//     yc
+//   );
+// }
+// const lastPointX = padding + (candlestickData.length - 1) * (candleWidth);
+// const lastPointY = scaleY(candlestickData[candlestickData.length - 1].close);
+// context.quadraticCurveTo(lastPointX, lastPointY, lastPointX, lastPointY);
+// context.strokeStyle = 'blue';
+// context.stroke();
+

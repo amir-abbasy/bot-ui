@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import CustomCandlestickChart from "./Chart";
+// import CustomCandlestickChart from "./Chart";
+import CustomCandlestickChart from "./ChartT";
+// import CustomCandlestickChart from "./ChartRSI.jsx";
 import JsonLoader from './_fun/JsonLoader.jsx'
 import botConfig from "./botConfig";
 import {
@@ -247,6 +249,7 @@ function App() {
           }
           initialResist={Math.max(...initialResistAr)}
           initialSupport={Math.min(...initialSupportAr)}
+          closes={close}
         />
 
         {/* <AnimatedChart
