@@ -106,6 +106,7 @@ const CustomCandlestickChart = ({
     var position_span = 0;
     var edgePrice = 0
     var trailing = false
+    var status = []
 
 
     var diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
