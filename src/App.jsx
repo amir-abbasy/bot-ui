@@ -12,7 +12,7 @@ import {
 import { useStore } from "./store.jsx";
 
 const data_offet = 0;
-const data_len = 1000; 
+const data_len = 276; 
 const speed = 1
 const playSpeed = 500
 
@@ -72,7 +72,7 @@ function App() {
     const handleScroll = (event) => {
       event.preventDefault();
       const container = scrollableRef.current;
-      const speed = event.shiftKey ? 0.5 : 3;
+      const speed = event.shiftKey ? 0.1 : 3;
       container.scrollLeft += event.deltaY * speed;
     };
 
@@ -209,13 +209,13 @@ function App() {
 
       </div>
 
-      <div className="logs">
+      {/* <div className="logs">
         {events.map((evt, id) => {
           return <div key={'evnt_' + id}>
             <p className="logs_txt">{evt.log} -{evt.index + 1}</p>
           </div>
         })}
-      </div>
+      </div> */}
 
       {activeCand && <div style={{
         position: 'absolute',
