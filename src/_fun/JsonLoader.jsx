@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import dates from '../data/data'
 
 const JsonLoader = ({ setJsonData = () => null }) => {
-  const [selectedDate, setSelectedDate] = useState('2023-03-07'); // 2022-01-31
+  const [selectedDate, setSelectedDate] = useState('2023-02-15'); // 2022-01-31
   const [index, setIndex] = useState(0);
 
   useEffect(() => {

@@ -100,8 +100,38 @@ function calculateSMA_(prices, period = 14) {
 }
 
 
+// https://www.binance.com/en-IN/futures/trading-rules/perpetual/leverage-margin
 
 
-export { calculatePercentage, percentageChange, calculateFee, log, calculateRSI, calculateRSIMA };
+
+// // Example usage:
+// let entryPrice = 10000; // Price at which the asset was bought
+// let positionSize = 5; // Number of units of the asset (e.g., 5 BTC)
+// let positionType = "long"; // Type of position: "long" or "short"
+
+// // Calculate Notional Position Value
+// let notionalPositionValue = calculateNotionalPositionValue(entryPrice, positionSize);
+// console.log("Notional Position Value:", notionalPositionValue);
+
+// // Determine the appropriate tier
+// let tier = getTier(notionalPositionValue);
+// console.log("Tier:", tier);
+
+// // Calculate Initial Margin
+// let initialMargin = calculateInitialMargin(entryPrice, positionSize, tier.maxLeverage);
+// console.log("Initial Margin:", initialMargin);
+
+// // Calculate Maintenance Margin
+// let maintenanceMargin = calculateMaintenanceMargin(notionalPositionValue, tier.maintenanceMarginRate, tier.maintenanceAmount);
+// console.log("Maintenance Margin:", maintenanceMargin);
+
+// // Calculate Liquidation Price
+// let liquidationPrice = calculateLiquidationPrice(entryPrice, tier.maxLeverage, tier.maintenanceMarginRate, tier.maintenanceAmount, positionSize, positionType);
+// console.log("Liquidation Price:", liquidationPrice);
+
+
+
+
+export { calculatePercentage, percentageChange, calculateFee, log, calculateRSI, calculateRSIMA};
 
 
