@@ -518,7 +518,7 @@ const CustomCandlestickChart = ({
 
       // RESULT BOX
       let INVEST = 10; // $60 = Rs-5000
-      let LEVERAGE = 10; // x
+      let LEVERAGE = 5; // x
       let FEE = 0.05; // %
       let amount = INVEST / position.entryPrice;
       let exit_size = amount * position.exitPrice;
