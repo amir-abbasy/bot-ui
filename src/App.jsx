@@ -12,7 +12,7 @@ import {
 import { useStore } from "./store.jsx";
 
 const data_offet = 0;
-const data_len = 1000; 
+const data_len = 1000;
 const speed = 1
 const playSpeed = 500
 
@@ -27,7 +27,7 @@ function App() {
     play: false
   });
 
-  const { events, activeCand, setActiveCand } = useStore()
+  const { events, activeCand, setActiveCand, setEvent, setEventClear } = useStore()
 
 
   const modifyData = ohlcv_data => ohlcv_data.slice(viewConfig.data_offet, viewConfig.data_len).map((_, k) => ({ t: _[0], o: _[1], h: _[2], l: _[3], c: _[4], v: _[5] }));
@@ -107,30 +107,27 @@ function App() {
     botConfig.leftValueSmall,
     botConfig.rightValueSmall
   );
-  // console.log(Math.max(...hls.filter(_ =>_).slice(0,3)));
-  var initialResistAr = hls.filter((_) => _).slice(0, 3);
-  var initalRangeStartR = hls.indexOf(initialResistAr[2]);
-  var initialSupportAr = lhs.filter((_) => _).slice(0, 3);
-  var initalRangeStartS = lhs.indexOf(initialSupportAr[2]);
 
-  // return (
-  //   <div className="horizontal-scroll-container" ref={scrollableRef}>
-  //     <Pattern
-  //       data={data}
-  //       hhs={hhs}
-  //       lls={lls}
-  //       hls={hls}
-  //       lhs={lhs}
-  //       initalRangeStart={
-  //         initalRangeStartR > initalRangeStartS
-  //           ? initalRangeStartR
-  //           : initalRangeStartS
-  //       }
-  //       initialResist={Math.max(...initialResistAr)}
-  //       initialSupport={Math.min(...initialSupportAr)}
-  //     />
-  //   </div>
-  // );
+  const hls10 = pivothigh(
+    close,
+    10,
+    10
+  );
+
+  const lhs10 = pivotlow(
+    close,
+    10,
+    10
+  );
+
+
+  // console.log(Math.max(...hls.filter(_ =>_).slice(0,3)));
+  var initialResistAr = hls.filter((_) => _).slice(0, 2);
+  var initalRangeStartR = hls.indexOf(Math.max(...initialResistAr));
+
+  var initialSupportAr = lhs.filter((_) => _).slice(0, 2);
+  var initalRangeStartS = lhs.indexOf(Math.min(...initialSupportAr));
+
 
   return (
     <div>
@@ -169,6 +166,7 @@ function App() {
         </button>
         <button
           onClick={() => {
+            setEventClear()
             setViewConfig({
               ...viewConfig,
               data_len: parseInt(viewConfig.data_len) + viewConfig.speed,
@@ -188,6 +186,7 @@ function App() {
         })}
         <button
           onClick={() => {
+            setEventClear()
             setViewConfig({
               ...viewConfig,
               data_len,
@@ -250,11 +249,11 @@ function App() {
           initialResist={Math.max(...initialResistAr)}
           initialSupport={Math.min(...initialSupportAr)}
           closes={close}
+          hls10={hls10}
+          lhs10={lhs10}
         />
 
-        {/* <AnimatedChart
-          data={data}
-        /> */}
+
       </div>
     </div>
   );

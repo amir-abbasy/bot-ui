@@ -34,6 +34,8 @@ export const StoreProvider = ({ children }) => {
         switch (action.type) {
             case "set_event":
                 return { ...state, events: [...state.events, action.payload] };
+            case "set_event_clear":
+                return { ...state, events: [] };
             case "set_active_cand":
                 return { ...state, activeCand: action.payload };
             default:
@@ -57,12 +59,19 @@ export const StoreProvider = ({ children }) => {
         });
     };
 
+    const setEventClear = () => {
+        dispatch({
+            type: "set_event_clear",
+        });
+    }
+
 
     const value = {
         ...state,
         dispatch,
         setEvent,
-        setActiveCand
+        setActiveCand,
+        setEventClear
     };
 
     return (

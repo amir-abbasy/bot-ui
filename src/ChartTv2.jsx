@@ -147,7 +147,7 @@ const CustomCandlestickChart = ({
     // Draw the candlestick chart
     data.forEach((cand, index) => {
       if (index < 2) return
-      // if (index < initalRangeStart) return
+      if (index < initalRangeStart) return
 
 
       let hl = hl_.filter(_ => (_.index + botConfig.leftValueSmall) < index)
@@ -171,13 +171,8 @@ const CustomCandlestickChart = ({
       const yClose = padding + (1 - (cand.c - minPrice) / priceRange) * chartHeight;
 
 
-      var day = new Date(cand["t"]).getDay();
-      var isHolyday = hl.length < 2 || lh.length < 2 // day == 5 || day == 6; // SAT, SUN
-      // if (isHolyday) Mark(ctx, { x1: x, y1: 30 }, "yellow", 4, 1)
-
-
       function ENTRY(type = "LONG", tag = null) {
-        if (isHolyday) return
+        if (hl.length < 1 || lh.length < 1) return
         if (isOrderPlaced) return
         positionTmp["entryPrice"] = cand.o;
         positionTmp["x1"] = x;
@@ -214,15 +209,15 @@ const CustomCandlestickChart = ({
         }
       }
 
-
+      var day = new Date(cand["t"]).getDay();
+      var isHolyday = false // day == 5 || day == 6; // SAT, SUN
+      // if (isHolyday) Mark(ctx, { x1: x, y1: 30 }, "yellow", 4, 1)
       // S & R
-      if (!isHolyday) {
-        Mark(ctx, priceCandle(resistBoxEnd, index), upColor + 40, candleWidth, 1);
-        Mark(ctx, priceCandle(resistBoxStart, index), upColor + 90, candleWidth, 1);
-        Mark(ctx, priceCandle(supportBoxStart, index), downColor + 90, candleWidth, 1);
-        Mark(ctx, priceCandle(supportBoxEnd, index), downColor + 40, candleWidth, 1);
-        Mark(ctx, priceCandle(middle, index), '#cccccc10', candleWidth, 1);
-      }
+      Mark(ctx, priceCandle(resistBoxEnd, index), upColor + 40, candleWidth, 1);
+      Mark(ctx, priceCandle(resistBoxStart, index), upColor + 90, candleWidth, 1);
+      Mark(ctx, priceCandle(supportBoxStart, index), downColor + 90, candleWidth, 1);
+      Mark(ctx, priceCandle(supportBoxEnd, index), downColor + 40, candleWidth, 1);
+      Mark(ctx, priceCandle(middle, index), '#cccccc10', candleWidth, 1);
 
       index % 5 == 0 && Text(ctx, index, x, 10, '#cccccc50');
 
@@ -268,12 +263,12 @@ const CustomCandlestickChart = ({
           ENTRY()
         }
 
-        // let last_lh10 = lh10.filter(_ => _.index > range_start)
-        // if (last_lh10.at(-1)?.c > last_lh10.at(-2)?.c && range == 0) {
-        //   console.log(index, last_lh10.at(-1)?.c, last_lh10.at(-2)?.c);
-        //   EXIT(undefined)
-        //   // ENTRY()
-        // }
+        let last_lh10 = lh10.filter(_ => _.index > range_start)
+        if (last_lh10.at(-1)?.c > last_lh10.at(-2)?.c && range == 0) {
+          console.log(index, last_lh10.at(-1)?.c, last_lh10.at(-2)?.c);
+          EXIT(undefined)
+          // ENTRY()
+        }
 
 
         if (cand.o > resistBoxEnd && range != 0) {
@@ -318,8 +313,8 @@ const CustomCandlestickChart = ({
           // if (cand.o < supportBoxStart || data.at(index - 1).l < supportBoxStart) {
           if (spread > 1) ENTRY(undefined, 'long')
         } else if ((cand.o > resistBoxStart || data[index - 1].h > resistBoxStart) && positionTmp["type"] == 'LONG' && reversalCandle) {
-          // EXIT('exit long')
-          // ENTRY('SHORT') // absy
+          EXIT('exit long')
+          ENTRY('SHORT') // absy
         }
 
 
@@ -328,8 +323,8 @@ const CustomCandlestickChart = ({
         if (cand.o > resistBoxStart) {
           if (spread > 1) ENTRY('SHORT')
         } else if ((cand.o < supportBoxStart || data[index - 1].l < supportBoxStart) && positionTmp["type"] == 'SHORT' && !reversalCandle) {
-          // EXIT('exit ' + positionTmp["type"])
-          // ENTRY(undefined, 'long') // absy
+          EXIT('exit ' + positionTmp["type"])
+          ENTRY(undefined, 'long') // absy
         }
 
 
@@ -383,7 +378,7 @@ const CustomCandlestickChart = ({
 
 
         if (hl_temp.length > 2 && hl_temp.at(-1)?.c < hl_temp.at(-2)?.c) {
-          resist[tradingRange] = priceCandle(hl_temp.at(-1)?.c)
+          resist[tradingRange] = priceCandle(lh_temp.at(-1)?.c)
           update_support_resist(support[tradingRange]["price"], resist[tradingRange]["price"])
           Text(ctx, "retest", x, priceCandle(resistBoxEnd, index)['y1'], 'yellow');
         }
@@ -420,12 +415,12 @@ const CustomCandlestickChart = ({
           ENTRY("SHORT")
         }
 
-        // let last_hl10 = hl10.filter(_ => _.index > range_start)
-        // let last_lh10 = hl10.filter(_ => _.index > range_start)
-        // if ((last_hl10.at(-1)?.c < last_hl10.at(-2)?.c || last_lh10.at(-1)?.c > last_lh10.at(-2)?.c) && range == 0) {
-        //   EXIT(undefined)
-        //   // ENTRY('SHORT')
-        // }
+        let last_hl10 = hl10.filter(_ => _.index > range_start)
+        let last_lh10 = hl10.filter(_ => _.index > range_start)
+        if ((last_hl10.at(-1)?.c < last_hl10.at(-2)?.c || last_lh10.at(-1)?.c > last_lh10.at(-2)?.c) && range == 0) {
+          EXIT(undefined)
+          // ENTRY('SHORT')
+        }
 
 
 
