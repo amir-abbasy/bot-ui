@@ -161,9 +161,12 @@ const CustomCandlestickChart = ({
       const yClose = padding + (1 - (cand.c - minPrice) / priceRange) * chartHeight;
 
       const spread = percentageChange(support[tradingRange]?.["price"], resist[tradingRange]["price"]);
+      var day = new Date(cand["t"]).getDay();
+      var isHolyday = hl.length < 2 || lh.length < 2  // day == 5 || day == 6; // SAT, SUN
+      // if (isHolyday) Mark(ctx, { x1: x, y1: 30 }, "yellow", 4, 1)
 
       function ENTRY(type = "LONG", tag = null) {
-        if (index < botConfig.leftValueSmall) return
+        if (index < botConfig.leftValueSmall || isHolyday) return
         if (isOrderPlaced) return
         positionTmp["entryPrice"] = cand.o;
         positionTmp["x1"] = x;
@@ -199,9 +202,7 @@ const CustomCandlestickChart = ({
         }
       }
 
-      var day = new Date(cand["t"]).getDay();
-      var isHolyday = false // day == 5 || day == 6; // SAT, SUN
-      // if (isHolyday) Mark(ctx, { x1: x, y1: 30 }, "yellow", 4, 1)
+   
       // S & R
       Mark(ctx, priceCandle(resistBoxEnd, index), upColor + 40, candleWidth, 1);
       Mark(ctx, priceCandle(resistBoxStart, index), upColor + 90, candleWidth, 1);
@@ -264,6 +265,7 @@ const CustomCandlestickChart = ({
           resist[tradingRange] = priceCandle(maxHl, index);
           update_support_resist(support[tradingRange]['price'], resist[tradingRange]["price"])
           Text(ctx, 'new range edge', x, 100, 'yellow');
+          EXIT()
 
         }
 
@@ -395,7 +397,7 @@ const CustomCandlestickChart = ({
           resist[tradingRange] = priceCandle(maxHl, index);
           update_support_resist(support[tradingRange]['price'], resist[tradingRange]["price"])
           Text(ctx, 'bullish edge', x, 100, 'yellow');
-
+          EXIT()
         }
 
       }

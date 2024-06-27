@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 // import CustomCandlestickChart from "./Chart";
-import CustomCandlestickChart from "./ChartT";
+import CustomCandlestickChart from "./ChartT.jsx";
 // import CustomCandlestickChart from "./ChartRSI.jsx";
 import JsonLoader from './_fun/JsonLoader.jsx'
 import botConfig from "./botConfig";
@@ -12,7 +12,7 @@ import {
 import { useStore } from "./store.jsx";
 
 const data_offet = 0;
-const data_len = 1000;
+const data_len = 400;
 const speed = 1
 const playSpeed = 500
 
