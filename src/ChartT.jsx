@@ -114,16 +114,6 @@ const CustomCandlestickChart = ({
     var status = []
 
 
-    // var diff = support[tradingRange]["y1"] - resist[tradingRange]["y1"];
-    // var supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
-    // resist[tradingRange]["diff"] = diff;
-    // support[tradingRange]["diff"] = diff;
-
-    // var resistBoxStart_plot = resist[tradingRange]["y1"] + supportResistArea / 2;
-    // var resistBoxEnd_plot = resist[tradingRange]["y1"] - supportResistArea / 2;
-    // var supportBoxStart_plot = support[tradingRange]["y1"] - supportResistArea / 2;
-    // var supportBoxEnd_plot = support[tradingRange]["y1"] + supportResistArea / 2;
-
     var diff = resist[tradingRange]["price"] - support[tradingRange]["price"];
     var supportResistArea = calculatePercentage(diff, botConfig.S_R_Area);
     var resistBoxStart = resist[tradingRange]["price"] - supportResistArea / 2;
@@ -144,10 +134,11 @@ const CustomCandlestickChart = ({
 
     // const prices = data.map(_ => _.o)
 
+
     // Draw the candlestick chart
     data.forEach((cand, index) => {
-      if (index < 2) return
-      // if (index < initalRangeStart) return
+      // if (index < 1) return
+      const end = index == data.length - 1
 
 
       let hl = hl_.filter(_ => (_.index + botConfig.leftValueSmall) < index)
@@ -172,8 +163,36 @@ const CustomCandlestickChart = ({
 
 
       var day = new Date(cand["t"]).getDay();
-      var isHolyday = hl.length < 2 || lh.length < 2 // day == 5 || day == 6; // SAT, SUN
+      // var isHolyday = hl.length < 2 || lh.length < 2 // day == 5 || day == 6; // SAT, SUN
+      var isHolyday = initalRangeStart + botConfig.leftValueSmall > index
       // if (isHolyday) Mark(ctx, { x1: x, y1: 30 }, "yellow", 4, 1)
+
+
+      // find strong support and resist ****************************************************
+      // var diffHeightView = Math.abs((priceCandle(resistBoxEnd, index)?.y1 - priceCandle(resistBoxStart, index)?.y2))
+      var tolerance = .6
+      var diffHeight = Math.abs(resistBoxEnd - resistBoxStart) * tolerance
+      var lastHlZoneStart = hl.at(-1)?.c - (diffHeight / 2)
+      var lastHlZoneEnd = hl.at(-1)?.c + (diffHeight / 2)
+      var lastLhZoneStart = lh.at(-1)?.c - (diffHeight / 2)
+      var lastLhZoneEnd = lh.at(-1)?.c + (diffHeight / 2)
+      var hls_in_last_HL_zone = hl.filter(({ c }) => c > lastHlZoneStart && c < lastHlZoneEnd) // strong resist if length > 1
+      var hls_in_last_LH_zone = lh.filter(({ c }) => c > lastLhZoneStart && c < lastLhZoneEnd) // strong support if length > 1
+      // hls_in_last_HL_zone.length > 1 && Mark(ctx, { x1: priceCandle(hl.at(-1)?.c, index).x1, y1: priceCandle(hl.at(-1)?.c, index).y1 - (diffHeightView * tolerance) / 2 }, "#43fa9280", candleWidth, diffHeightView * tolerance)
+      // hls_in_last_LH_zone.length > 1 && Mark(ctx, { x1: priceCandle(lh.at(-1)?.c, index).x1, y1: priceCandle(lh.at(-1)?.c, index).y1 - (diffHeightView * tolerance) / 2 }, "#fa654380", candleWidth, diffHeightView * tolerance)
+      Mark(ctx, priceCandle(hl.at(-1)?.c, index), hls_in_last_HL_zone.length > 1 ? "#0ee874" : "#0ee87420", hls_in_last_HL_zone.length > 1 ? candleWidth : 4, .5) // Last hl 
+      Mark(ctx, priceCandle(lh.at(-1)?.c, index), hls_in_last_LH_zone.length > 1 ? "#e8410e" : "#e8410e20", hls_in_last_LH_zone.length > 1 ? candleWidth : 4, .5) // Last lh 
+      // if (end) console.log(index, hls_in_last_LH_zone);
+      if(hls_in_last_HL_zone.length > 1){
+        resist[tradingRange] = priceCandle(hl.at(-1)?.c, index)
+        update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
+      }
+      if(hls_in_last_LH_zone.length > 1){
+        support[tradingRange] = priceCandle(lh.at(-1)?.c, index)
+        update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
+      }
+      // ******* end ********
+
 
 
       function ENTRY(type = "LONG", tag = null) {
@@ -356,12 +375,12 @@ const CustomCandlestickChart = ({
 
 
 
-        let change = percentageChange(positionTmp["entryPrice"], cand.o) // %
-        if(index == data.length-1)console.log(index, change);
-        if (positionTmp["type"] == 'SHORT' && -1 > change ) {
-          Text(ctx, '% ' + change, x, 100, 'yellow');
-          EXIT()
-        }
+        // let change = percentageChange(positionTmp["entryPrice"], cand.o) // %
+        // if (index == data.length - 1) console.log(index, change);
+        // if (positionTmp["type"] == 'SHORT' && -1 > change) {
+        //   Text(ctx, '% ' + change, x, 100, 'yellow');
+        //   EXIT()
+        // }
 
 
 

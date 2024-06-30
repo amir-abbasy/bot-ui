@@ -12,7 +12,7 @@ import {
 import { useStore } from "./store.jsx";
 
 const data_offet = 0;
-const data_len = 400;
+const data_len = 220;
 const speed = 1
 const playSpeed = 500
 
@@ -122,10 +122,11 @@ function App() {
 
 
   // console.log(Math.max(...hls.filter(_ =>_).slice(0,3)));
-  var initialResistAr = hls.filter((_) => _).slice(0, 2);
+  var initialResistAr = hls.filter((_) => _).slice(0, 1);
   var initalRangeStartR = hls.indexOf(Math.max(...initialResistAr));
 
-  var initialSupportAr = lhs.filter((_) => _).slice(0, 2);
+
+  var initialSupportAr = lhs.filter((_) => _).slice(0, 1);
   var initalRangeStartS = lhs.indexOf(Math.min(...initialSupportAr));
 
 
