@@ -131,7 +131,20 @@ function calculateSMA_(prices, period = 14) {
 
 
 
+function transformData(data) {
+  const date = new Date(data.t).toISOString().split('T')[0];
+  return {
+    security: 'ORCL',
+    date: date,
+    open: data.o,
+    high: data.h,
+    low: data.l,
+    close: data.c
+  };
+}
 
-export { calculatePercentage, percentageChange, calculateFee, log, calculateRSI, calculateRSIMA};
+
+
+export { calculatePercentage, percentageChange, calculateFee, log, calculateRSI, calculateRSIMA, transformData};
 
 
