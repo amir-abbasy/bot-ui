@@ -26,3 +26,7 @@ if false breakout
  - await 5th hl, lh retest if not price touch support or resist
  - after reversal wait for new  hl, lh and update  support or resist as  hl, lh
 
+
+
+
+

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 // import CustomCandlestickChart from "./Chart";
-import CustomCandlestickChart from "./ChartT.jsx";
+import CustomCandlestickChart from "./ChartTBR.jsx";
 // import CustomCandlestickChart from "./ChartRSI.jsx";
 import JsonLoader from './_fun/JsonLoader.jsx'
 import botConfig from "./botConfig";

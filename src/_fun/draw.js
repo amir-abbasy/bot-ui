@@ -67,4 +67,23 @@ const Text = (ctx, text = "no text", x, y, color = "#fff", font = "12px Arial") 
   ctx.fillText(text, x, y);
 };
 
-export { drawPosition, drawTrendLineObj, drawTrendLine, drawRect, Mark, Text };
+
+const icons = {
+  bullish: "/icons/bullish.png",
+  bearish: "/icons/bearish.png",
+  retest: "/icons/retest.png",
+  reverse: "/icons/reverse.png",
+  return: "/icons/return.png",
+  
+}
+
+
+const image = (ctx, src= 'bullish', x = 0, y = 0, w = 30, h = 30) => {
+  var img = new Image;
+  img.onload = function () {
+    ctx.drawImage(img, x, y, w, h); // Or at whatever offset you like
+  };
+  img.src = icons[src];
+}
+
+export { drawPosition, drawTrendLineObj, drawTrendLine, drawRect, Mark, Text, image};

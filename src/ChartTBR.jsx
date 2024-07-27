@@ -203,11 +203,11 @@ const CustomCandlestickChart = ({
       var strong_resist = hls_in_last_LH_zone.length > 1 ? hl.at(-1)?.c : strong_resist
       // if (end) console.log(index, hls_in_last_LH_zone);
 
-      if (hls_in_last_HL_zone.length > 1 && false) {
+      if (hls_in_last_HL_zone.length > 1) {
         resist[tradingRange] = priceCandle(hl.at(-1)?.c, index)
         update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
       }
-      if (hls_in_last_LH_zone.length > 1 && false) {
+      if (hls_in_last_LH_zone.length > 1) {
         support[tradingRange] = priceCandle(lh.at(-1)?.c, index)
         update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
       }
@@ -376,7 +376,7 @@ const CustomCandlestickChart = ({
 
         // LONG ENTRIES 
         if (cand.o < supportBoxStart && cand.o > supportBoxEnd) {
-          if (!Status.status('bearish')) ENTRY(undefined, 'LONG')
+          // if (!Status.status('bearish')) ENTRY(undefined, 'LONG')
         } else if ((cand.o > resistBoxStart || data[index - 1].h > resistBoxStart) && positionTmp["type"] == 'LONG' && !isBullishCand) {
           EXIT('exit long')
           // ENTRY('SHORT')
@@ -385,7 +385,7 @@ const CustomCandlestickChart = ({
 
         // SHORT ENTRIES 
         if (cand.o > resistBoxStart && cand.o < resistBoxEnd) {
-          if (!Status.status('bullish')) ENTRY('SHORT')
+          // if (!Status.status('bullish')) ENTRY('SHORT')
         } else if ((cand.o < supportBoxStart || data[index - 1].l < supportBoxStart) && positionTmp["type"] == 'SHORT' && isBullishCand) {
           EXIT('exit short')
           // ENTRY(undefined, 'LONG')
@@ -611,7 +611,7 @@ const CustomCandlestickChart = ({
         if (positionTmp["type"] != "SHORT") {
           // EXIT(undefined, supportBoxEnd)
           EXIT()
-          ENTRY('SHORT', 'BRK-S')
+          // ENTRY('SHORT', 'BRK-S')
           // if (hl_temp.length == 0 || hl_temp.at(-1)?.c < middle) ENTRY('SHORT', 'breakout S')
         }
       }
@@ -628,7 +628,7 @@ const CustomCandlestickChart = ({
         if (positionTmp["type"] != "LONG") {
           // EXIT(undefined, resistBoxEnd)
           EXIT()
-          ENTRY(undefined, 'BRK')
+          // ENTRY(undefined, 'BRK')
           // if (lh_temp.length == 0 || lh_temp.at(-1)?.c > middle) ENTRY(undefined, 'breakout L')
         }
 
@@ -764,7 +764,7 @@ const CustomCandlestickChart = ({
         var diff = percentageChange(position.exitPrice, position.entryPrice);
       }
 
-      if (pl > 3) return
+      // if (pl > 3) return
 
       pnl += pl;
 
