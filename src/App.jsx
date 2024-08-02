@@ -14,7 +14,7 @@ import { useStore } from "./store.jsx";
 const data_offet = 0;
 const data_len = 1000;
 const speed = 1
-const playSpeed = 300
+const playSpeed = 4
 
 
 function App() {
