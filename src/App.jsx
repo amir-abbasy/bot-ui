@@ -12,7 +12,7 @@ import {
 import { useStore } from "./store.jsx";
 
 const data_offet = 0;
-const data_len = 450;
+const data_len = 340;
 const speed = 1
 const playSpeed = 4
 
