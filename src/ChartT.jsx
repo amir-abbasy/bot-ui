@@ -230,7 +230,7 @@ const CustomCandlestickChart = ({
         resist[tradingRange] = onChart(hl.at(-1)?.c, index)
         support[tradingRange] = onChart(lh.at(-1)?.c, index)
         update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
-        return
+        // return
       }
 
       // if (hls_in_last_HL_zone.length > 2) {
@@ -382,6 +382,11 @@ const CustomCandlestickChart = ({
           var levelBottomStart = lh_last.at(-1)?.c + supportResistArea / 2;
           var levelBottomEnd = lh_last.at(-1)?.c - supportResistArea / 2;
 
+          if (lh_last.at(-1)?.c < lh_last.at(-2)?.c && lh_last.at(-2)?.c < hl_last.at(-1)?.c) {
+            levelTopStart = lh_last.at(-2)?.c + supportResistArea / 2;
+            levelTopEnd = lh_last.at(-2)?.c - supportResistArea / 2;
+          }
+
           Mark(ctx, onChart(levelTopStart, index), '#5e03fc90', candleWidth, 1);
           Mark(ctx, onChart(levelTopEnd, index), '#5e03fc90', candleWidth, 1);
           Mark(ctx, onChart(levelBottomStart, index), '#0367fc90', candleWidth, 1);
@@ -427,10 +432,15 @@ const CustomCandlestickChart = ({
           }
 
           // small position
-          if (change > 1) trailing = true
-          if (trailing) Text(ctx, 'T', x, 100, 'skyblue');
-          if (trailing && (cand.o - edgePriceDown) > calculatePercentage((positionTmp['entryPrice'] - edgePriceDown), 30)) {
-            // EXIT('trailing')
+          // let height = percentageChange(support[tradingRange].price, resist[tradingRange].price)
+          let height = percentageChange(Math.min(...lh.slice(-3).map(_ => _.c)), Math.max(...hl.slice(-3).map(_ => _.c)))
+          if (change > height / 2) trailing = true
+          if (trailing) Text(ctx, '/', x, 100, 'skyblue');
+          // if (end) console.log({ height, change, '>': height / 2 }, change > height / 2, trailing);
+          if (trailing && (cand.o - edgePriceDown) > calculatePercentage((positionTmp['entryPrice'] - edgePriceDown), 30) && change > height / 2 && change < 2) {
+            Text(ctx, change.toFixed(2) + "%", x, 150);
+            EXIT('trailing')
+            // trailing = false
             // ENTRY()
           }
 
@@ -438,17 +448,13 @@ const CustomCandlestickChart = ({
           // if(cand.o > lh10.at(-1)?.c){
           //   EXIT('< hl10')
           // }
+          if (-1 > change) EXIT('reduce lose')
+
         }
-
-
-
-
       } // end bearish
 
 
       // if(end)console.log(reversalCandle);
-
-
       if (Status.status('fake_brk_down')) {
         Mark(ctx, onChart(middle, index), 'blue', candleWidth, 1);
       }
@@ -549,51 +555,60 @@ const CustomCandlestickChart = ({
 
         if (lh_last.length > 1 && lh_last.at(-1)?.c > lh_last.at(-2)?.c && cand.c > lh_last.at(-1)?.c && !Status.status('bullish')) {
           // if(positionTmp["type"] == 'SHORT')EXIT('lh > lh-1')
-          image(ctx, 'bullish', x, yClose + 10)
+          // image(ctx, 'bullish', x, yClose + 10)
           Status.add('bullish')
         }
 
         if (hl_last.length > 1 && hl_last.at(-1)?.c < hl_last.at(-2)?.c && cand.c < hl_last.at(-1)?.c && !Status.status('bearish')) {
           // if(positionTmp["type"] == 'LONG')EXIT('hl > hl-1')
-          image(ctx, 'bearish', x, yClose - 10)
+          // image(ctx, 'bearish', x, yClose - 10)
           Status.add('bearish')
         }
 
+
+
         // retest
-
-
+        let height = percentageChange(Math.min(...lh.slice(-3).map(_ => _.c)), Math.max(...hl.slice(-3).map(_ => _.c)))
 
         if (hl_last.length > 2 && hl_last.slice(hl_last.length - 2).every(_ => (_.c < middle && _.c > supportBoxStart))) {
-          Text(ctx, 'retest hl', x, 25);
-          resist[tradingRange] = onChart(hl_last.at(-1)?.c, index);
-          update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
-          image(ctx, 'retest', x, yClose)
+          if (height > 1) {
+            Text(ctx, 'retest hl '+ height.toFixed(2), x, 25);
+            resist[tradingRange] = onChart(hl_last.at(-1)?.c, index);
+            update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
+            image(ctx, 'retest', x, yClose)
+          }
         }
 
         if (lh_last.length > 2 && lh_last.slice(lh_last.length - 2).every(_ => (_.c < middle && _.c > supportBoxStart))) {
-          Text(ctx, 'retest lh', x, 25);
-          support[tradingRange] = onChart(lh_last.at(-1)?.c, index);
-          update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
-          image(ctx, 'retest', x, yClose)
-
+          if (height > 1) {
+            Text(ctx, 'retest lh '+ height.toFixed(2), x, 25);
+            support[tradingRange] = onChart(lh_last.at(-1)?.c, index);
+            update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
+            image(ctx, 'retest', x, yClose)
+          }
         }
 
         // lhs above middle
 
 
         if (hl_last.length > 2 && hl_last.slice(hl_last.length - 2).every(_ => (_.c < middle && _.c < resistBoxEnd))) {
-          Text(ctx, 'retest hl', x, 25);
-          resist[tradingRange] = onChart(hl_last.at(-1)?.c, index);
-          update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
-          image(ctx, 'retest', x, yClose)
+          if (height > 1) {
 
+            Text(ctx, 'retest hl '+ height.toFixed(2), x, 25);
+            resist[tradingRange] = onChart(hl_last.at(-1)?.c, index);
+            update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
+            image(ctx, 'retest', x, yClose)
+          }
         }
 
         if (lh_last.length > 2 && lh_last.slice(lh_last.length - 2).every(_ => (_.c > middle && _.c < resistBoxEnd))) {
-          Text(ctx, 'retest hl', x, 25);
-          support[tradingRange] = onChart(lh_last.at(-1)?.c, index);
-          update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
-          image(ctx, 'retest', x, yClose)
+          if (height > 1) {
+
+            Text(ctx, 'retest hl '+ height.toFixed(2), x, 25);
+            support[tradingRange] = onChart(lh_last.at(-1)?.c, index);
+            update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
+            image(ctx, 'retest', x, yClose)
+          }
         }
 
 
@@ -656,22 +671,22 @@ const CustomCandlestickChart = ({
           // ENTRY("SHORT")
           // }
 
+
         }
 
 
         if (cand.o > hl_last.at(-1)?.c) {
           // breakout  = 'await'
-          // ENTRY()
+          ENTRY()
           // range_start = index
         }
 
         // Reverse
         if (!Status.status('break_bullish_level_1')) {
 
-          if (hl_last.at(-1)?.c < hl_last.at(-2)?.c) {
-            EXIT("hl < hl[1]")
-          }
-
+          // if (hl_last.at(-1)?.c < hl_last.at(-2)?.c) {
+          //   EXIT("hl < hl[1]")
+          // }
 
 
           if (lh_last.length > 0) {
@@ -683,26 +698,35 @@ const CustomCandlestickChart = ({
           }
 
           if (cand.o < resistBoxStart || cand.o < strong_resist_start && cand.o < positionTmp['entry_price']) {
-            Text(ctx, cand.o < strong_resist_start ? 'U' : 'R', x, 100, 'yellow');
+            Text(ctx, cand.o < strong_resist_start ? '-' : 'R', x, 100, 'yellow');
             // breakout = 'await'
             Status.remove('break_bullish_level_1')
             EXIT('on rev')
-
             resist[tradingRange] = onChart(edgePriceUp, index);
             update_support_resist(support[tradingRange]['price'], resist[tradingRange]['price'])
           }
 
 
-          // small position
-          if (change > 1) trailing = true
-          if (trailing && -.3 > trailing_ch) {
-            // EXIT('trailing')
-            // ENTRY('SHORT')
+
+
+
+          // TRAILING EXIT
+          // let height = percentageChange(support[tradingRange].price, resist[tradingRange].price)
+          let height = percentageChange(Math.min(...lh.slice(-3).map(_ => _.c)), Math.max(...hl.slice(-3).map(_ => _.c)))
+          if (change > height / 2) trailing = true
+          if (trailing) Text(ctx, '/', x, 100, 'skyblue');
+          // if (end) console.log(change);
+          if (trailing && (edgePriceUp - cand.o) > calculatePercentage((edgePriceUp - positionTmp['entryPrice']), 30) && height / 2 > 1 && change < 2) {
+            Text(ctx, change.toFixed(2) + "%", x, 150);
+            EXIT('trailing')
+            // ENTRY()
           }
 
           // if(cand.o < hl10.at(-1)?.c){
           //   EXIT('< hl10')
           // }
+
+          if (-1 > change) EXIT('reduce lose')
 
         }
 
@@ -745,6 +769,8 @@ const CustomCandlestickChart = ({
         range_start = index
         edgePriceUp = 0
         edgePriceDown = 0
+        image(ctx, 'bearish', x, yClose - 10)
+
 
         // Text(ctx, 'bearish', x, onChart(lh_last.at(-1)?.c, index)['y1'], 'yellow');
 
@@ -766,8 +792,9 @@ const CustomCandlestickChart = ({
         range_start = index
         edgePriceUp = 0
         edgePriceDown = 0
-        // Text(ctx, 'bullish', x, onChart(lh_last.at(-1)?.c, index)['y1'], 'yellow');
+        image(ctx, 'bullish', x, yClose + 10)
 
+        // Text(ctx, 'bullish', x, onChart(lh_last.at(-1)?.c, index)['y1'], 'yellow');
         if (positionTmp["type"] != "LONG") {
           // EXIT(undefined, resistBoxEnd)
           EXIT()
