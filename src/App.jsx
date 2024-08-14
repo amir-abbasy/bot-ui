@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import CustomCandlestickChart from "./ChartT.jsx";
+// import CustomCandlestickChart from "./ChartT.jsx";
+import CustomCandlestickChart from "./Chart.jsx";
 // import CustomCandlestickChart from "./ChartTBR.jsx";
 // import CustomCandlestickChart from "./ChartRSI.jsx";
 import JsonLoader from './_fun/JsonLoader.jsx'
@@ -17,9 +18,15 @@ const speed = 1
 const playSpeed = 4
 
 
+
+
+
+
+
 function App() {
   const [fullData, setFullData] = useState([]);
   const [data, setData] = useState([]);
+  const [bot, setBot] = useState();
   const [viewConfig, setViewConfig] = useState({
     data_offet,
     data_len,
@@ -37,6 +44,23 @@ function App() {
     //   setData(modifyData(fullData));
     setData(prevData => modifyData(fullData));
   }, [viewConfig.data_len, viewConfig.data_offet]);
+
+
+
+  useEffect(() => {
+    const bot_ai = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/bot');
+        const data = await response.json();
+        // console.log({data});
+        setBot(data);
+        setData(modifyData(data.candles));
+      } catch (error) {
+        console.error('Error fetching the ping response:', error);
+      }
+    };
+    bot_ai();
+  }, []);
 
 
 
@@ -238,6 +262,7 @@ function App() {
       <div className="horizontal-scroll-container" ref={scrollableRef}>
         <CustomCandlestickChart
           data={data}
+          bot={bot}
           hhs={hhs}
           lls={lls}
           hls={hls}

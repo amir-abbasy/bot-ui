@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "proxy": "http://127.0.0.1:8000",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
@@ -10,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.7.3",
     "candlestick": "^0.0.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
