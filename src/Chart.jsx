@@ -6,7 +6,8 @@ import {
   drawRect,
   Mark,
   Text,
-  image
+  image,
+  drawLine
 } from "./_fun/draw.js";
 import {
   calculatePercentage,
@@ -151,6 +152,7 @@ const CustomCandlestickChart = ({
     // const prices = data.map(_ => _.o)
 
 
+
     // Draw the candlestick chart
     data.forEach((cand, index) => {
       if (index < 1) return
@@ -208,8 +210,7 @@ const CustomCandlestickChart = ({
 
       // DRAW INDICATORS
 
-      console.log(bot?.points);
-      
+
       // Function to draw text box and the text
       function drawTextBox(x, y, text, fill) {
         // Clear the canvas
@@ -224,28 +225,25 @@ const CustomCandlestickChart = ({
         ctx.fillStyle = '#fff';
         ctx.fillText(text, x, y + 25);
       }
-      if (bot?.['points'][index] == "LL") drawTextBox(x, yClose, 'LL', 'red');
-      if (bot?.['points'][index] == "HL") drawTextBox(x, yClose, 'HL', '#00000000');
-      if (bot?.['points'][index] == "HH") drawTextBox(x, yClose, 'HH', 'green');
-      if (bot?.['points'][index] == "LH") drawTextBox(x, yClose, 'LH', '#00000000');
+      // drawTextBox(x, yClose, 'LL', 'red');
 
 
 
-      // if (bot['resists'][index]) {
-      //   ctx.beginPath();
-      //   ctx.arc(x, yClose, 6, 0, 2 * Math.PI);
-      //   ctx.stroke();
-      //   ctx.fillStyle = upColor;
-      //   ctx.fill();
-      // }
+      if (bot['h_points'][index]) {
+        ctx.beginPath();
+        ctx.arc(x, yClose, 6, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.fillStyle = upColor;
+        ctx.fill();
+      }
 
-      // if (bot['supports'][index]) {
-      //   ctx.beginPath();
-      //   ctx.arc(x, yClose, 6, 0, 2 * Math.PI);
-      //   ctx.stroke();
-      //   ctx.fillStyle = downColor;
-      //   ctx.fill();
-      // }
+      if (bot['l_points'][index]) {
+        ctx.beginPath();
+        ctx.arc(x, yClose, 6, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.fillStyle = downColor;
+        ctx.fill();
+      }
 
       // if (hls[index]) {
       //   ctx.beginPath();
@@ -309,12 +307,36 @@ const CustomCandlestickChart = ({
     }); // END CANDLE LOOP
 
     // DRAW SUPPORT & RESIST
-    0 && support.forEach((s_or_r, idx) => {
-      // Initial Resist
-      drawTrendLineObj(ctx, support[idx], downColor);
-      // Initial Support
-      drawTrendLineObj(ctx, resist[idx], upColor);
-      // log(support[idx]);
+    bot?.resists.forEach((res, idx) => {
+      let ch_1 = onChart(res.price, res.start_index)
+      let ch_2 = onChart(res.price, res.end_index)
+      drawLine(ctx, ch_1.x1, ch_1.y1, ch_2.x1, ch_2.y1, upColor)
+
+      let hl_top_1 = onChart(res.hl_top, res.start_index)
+      let hl_top_2 = onChart(res.hl_top, res.end_index)
+      drawLine(ctx, hl_top_1.x1, hl_top_1.y1, hl_top_2.x1, hl_top_2.y1, '#cccccc50')
+
+      let hl_bot_1 = onChart(res.hl_bot, res.start_index)
+      let hl_bot_2 = onChart(res.hl_bot, res.end_index)
+      drawLine(ctx, hl_bot_1.x1, hl_bot_1.y1, hl_bot_2.x1, hl_bot_2.y1, '#cccccc50')
+
+
+
+    });
+
+    bot?.supports.forEach((sup, idx) => {
+      let ch_1 = onChart(sup.price, sup.start_index)
+      let ch_2 = onChart(sup.price, sup.end_index)
+      drawLine(ctx, ch_1.x1, ch_1.y1, ch_2.x1, ch_2.y1, downColor)
+
+      let lh_top_1 = onChart(sup.lh_top, sup.start_index)
+      let lh_top_2 = onChart(sup.lh_top, sup.end_index)
+      drawLine(ctx, lh_top_1.x1, lh_top_1.y1, lh_top_2.x1, lh_top_2.y1, '#cccccc50')
+
+      let lh_bot_1 = onChart(sup.lh_bot, sup.start_index)
+      let lh_bot_2 = onChart(sup.lh_bot, sup.end_index)
+      drawLine(ctx, lh_bot_1.x1, lh_bot_1.y1, lh_bot_2.x1, lh_bot_2.y1, '#cccccc50')
+
     });
 
     // DRAW POSITIONS

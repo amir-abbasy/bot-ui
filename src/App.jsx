@@ -260,7 +260,7 @@ function App() {
 
 
       <div className="horizontal-scroll-container" ref={scrollableRef}>
-        <CustomCandlestickChart
+        {bot && <CustomCandlestickChart
           data={data}
           bot={bot}
           hhs={hhs}
@@ -277,7 +277,7 @@ function App() {
           closes={close}
           hls10={hls10}
           lhs10={lhs10}
-        />
+        />}
 
 
       </div>

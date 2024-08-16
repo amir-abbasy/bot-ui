@@ -45,6 +45,14 @@ const drawTrendLine = (ctx, draw, color = "blue") => {
   ctx.stroke();
 };
 
+const drawLine = (ctx, x1, y1, x2, y2, color = "blue") => {
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = color;
+  ctx.stroke();
+};
+
 const Mark = (ctx, obj, color = "#6f03fc", width = 10, height = 10) => {
   // ctx.fillStyle = color + "20";
   ctx.fillStyle = color;
@@ -61,12 +69,18 @@ const drawRect = (ctx, obj, color = "blue") => {
 //   ctx.fillText(text, obj.x1, obj.y1);
 // };
 
-const Text = (ctx, text = "no text", x, y, color = "#fff", font = "12px Arial") => {
-  ctx.font = font
+const Text = (
+  ctx,
+  text = "no text",
+  x,
+  y,
+  color = "#fff",
+  font = "12px Arial"
+) => {
+  ctx.font = font;
   ctx.fillStyle = color;
   ctx.fillText(text, x, y);
 };
-
 
 const icons = {
   bullish: "/icons/bullish.png",
@@ -74,16 +88,23 @@ const icons = {
   retest: "/icons/retest.png",
   reverse: "/icons/reverse.png",
   return: "/icons/return.png",
-  
-}
+};
 
-
-const image = (ctx, src= 'bullish', x = 0, y = 0, w = 30, h = 30) => {
-  var img = new Image;
+const image = (ctx, src = "bullish", x = 0, y = 0, w = 30, h = 30) => {
+  var img = new Image();
   img.onload = function () {
     ctx.drawImage(img, x, y, w, h); // Or at whatever offset you like
   };
   img.src = icons[src];
-}
+};
 
-export { drawPosition, drawTrendLineObj, drawTrendLine, drawRect, Mark, Text, image};
+export {
+  drawPosition,
+  drawTrendLineObj,
+  drawTrendLine,
+  drawRect,
+  Mark,
+  Text,
+  image,
+  drawLine
+};
