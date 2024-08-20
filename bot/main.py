@@ -40,13 +40,18 @@ app.add_middleware(
 @app.get('/bot')
 async def bot_backend():
     response = {
-        'out': bot.out,
-        'h_points': bot.h_points,
-        'l_points': bot.l_points,
         'supports': bot.supports,
         'resists': bot.resists,
         # 'previous_trades': bot.previous_trades,
         # 'current_trade': bot.current_trade,
+        'marks': bot.marks,
+        'text': bot.text,
+        'strong_supports': bot.strong_supports,
+        'strong_resists': bot.strong_resists,
+
+        'positions': bot.positions,
+        'h_points': bot.h_points,
+        'l_points': bot.l_points,
         'candles': bot.candles,
         # 'times': bot.times
     }

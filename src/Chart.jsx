@@ -190,6 +190,7 @@ const CustomCandlestickChart = ({
 
       // // High Low shadow
       ctx.beginPath();
+      ctx.setLineDash([]);
       ctx.moveTo(x, yHigh);
       ctx.lineTo(x, yLow);
       ctx.strokeStyle = cand.o <= cand.c ? isHolyday ? upColor + 40 : upColor : isHolyday ? downColor + 40 : downColor;
@@ -228,6 +229,23 @@ const CustomCandlestickChart = ({
       // drawTextBox(x, yClose, 'LL', 'red');
 
 
+      if (bot['marks']) {
+        bot['marks'].map(_ => {
+          let { x1: x, y1: y } = onChart(_.price, _.index)
+          return image(ctx, _.mark, x, y)
+          // return Mark(ctx, onChart(_.price, _.index), 'yellow', 6, 6);
+        })
+      }
+
+
+      if (bot['text']) {
+        bot['text'].map(_ => {
+          let cord = onChart(_.price, _.index)
+          return Text(ctx, _.text, cord.x1, cord.y1, _?.color);
+          // return Mark(ctx, onChart(_.price, _.index), 'yellow', 6, 6);
+        })
+      }
+
 
       if (bot['h_points'][index]) {
         ctx.beginPath();
@@ -245,59 +263,6 @@ const CustomCandlestickChart = ({
         ctx.fill();
       }
 
-      // if (hls[index]) {
-      //   ctx.beginPath();
-      //   ctx.arc(x, yClose, 6, 0, 2 * Math.PI);
-      //   ctx.stroke();
-      //   ctx.fillStyle = upColor;
-      //   ctx.fill();
-      //   hl_.push({ index, x, yClose, ...cand }); // 🔴
-      //   hl_temp_.push({ index, x, yClose, ...cand });
-      // }
-
-      // if (lhs[index]) {
-      //   ctx.beginPath();
-      //   ctx.arc(x, yClose, 6, 0, 2 * Math.PI);
-      //   ctx.stroke();
-      //   ctx.fillStyle = downColor;
-      //   ctx.fill();
-      //   lh_.push({ index, x, yClose, ...cand }); // 🔴
-      //   lh_temp_.push({ index, x, yClose, ...cand });
-      // }
-
-
-      // // HL/LH 10
-      // if (hls10[index]) {
-      //   hl10_.push({ index, x, yClose, ...cand }); // 🔴
-
-      //   ctx.beginPath();
-      //   ctx.arc(x, yClose, 10, 0, 2 * Math.PI);
-      //   ctx.stroke();
-      // }
-      // if (lhs10[index]) {
-      //   lh10_.push({ index, x, yClose, ...cand }); // 🔴
-
-      //   ctx.beginPath();
-      //   ctx.arc(x, yClose, 10, 0, 2 * Math.PI);
-      //   ctx.stroke();
-      // }
-
-
-      // // HH
-      // if (hhs[index]) {
-      //   hh.push({ x, yClose }); // 
-      //   ctx.beginPath();
-      //   ctx.arc(x, yClose, 25, 0, 2 * Math.PI);
-      //   ctx.stroke();
-      // }
-      // // LL
-      // if (lls[index]) {
-      //   ll.push({ x, yClose }); // 
-      //   ctx.beginPath();
-      //   ctx.arc(x, yClose, 25, 0, 2 * Math.PI);
-      //   ctx.stroke();
-      // }
-
 
 
 
@@ -308,43 +273,66 @@ const CustomCandlestickChart = ({
 
     // DRAW SUPPORT & RESIST
     bot?.resists.forEach((res, idx) => {
-      let ch_1 = onChart(res.price, res.start_index)
-      let ch_2 = onChart(res.price, res.end_index)
-      drawLine(ctx, ch_1.x1, ch_1.y1, ch_2.x1, ch_2.y1, upColor)
+      // let ch_1 = onChart(res.price, res.start_index)
+      // let ch_2 = onChart(res.price, res.end_index)
+      // drawLine(ctx, ch_1.x1, ch_1.y1, ch_2.x1, ch_2.y1, upColor)
 
       let hl_top_1 = onChart(res.hl_top, res.start_index)
       let hl_top_2 = onChart(res.hl_top, res.end_index)
-      drawLine(ctx, hl_top_1.x1, hl_top_1.y1, hl_top_2.x1, hl_top_2.y1, '#cccccc50')
+      drawLine(ctx, hl_top_1.x1, hl_top_1.y1, hl_top_2.x1, hl_top_2.y1, upColor + 60)
 
       let hl_bot_1 = onChart(res.hl_bot, res.start_index)
       let hl_bot_2 = onChart(res.hl_bot, res.end_index)
-      drawLine(ctx, hl_bot_1.x1, hl_bot_1.y1, hl_bot_2.x1, hl_bot_2.y1, '#cccccc50')
-
-
+      drawLine(ctx, hl_bot_1.x1, hl_bot_1.y1, hl_bot_2.x1, hl_bot_2.y1, upColor + 60)
 
     });
 
     bot?.supports.forEach((sup, idx) => {
-      let ch_1 = onChart(sup.price, sup.start_index)
-      let ch_2 = onChart(sup.price, sup.end_index)
-      drawLine(ctx, ch_1.x1, ch_1.y1, ch_2.x1, ch_2.y1, downColor)
+      // let ch_1 = onChart(sup.price, sup.start_index)
+      // let ch_2 = onChart(sup.price, sup.end_index)
+      // drawLine(ctx, ch_1.x1, ch_1.y1, ch_2.x1, ch_2.y1, downColor)
 
       let lh_top_1 = onChart(sup.lh_top, sup.start_index)
       let lh_top_2 = onChart(sup.lh_top, sup.end_index)
-      drawLine(ctx, lh_top_1.x1, lh_top_1.y1, lh_top_2.x1, lh_top_2.y1, '#cccccc50')
+      drawLine(ctx, lh_top_1.x1, lh_top_1.y1, lh_top_2.x1, lh_top_2.y1, downColor + 60)
 
       let lh_bot_1 = onChart(sup.lh_bot, sup.start_index)
       let lh_bot_2 = onChart(sup.lh_bot, sup.end_index)
-      drawLine(ctx, lh_bot_1.x1, lh_bot_1.y1, lh_bot_2.x1, lh_bot_2.y1, '#cccccc50')
+      drawLine(ctx, lh_bot_1.x1, lh_bot_1.y1, lh_bot_2.x1, lh_bot_2.y1, downColor + 60)
 
     });
 
+
+    // STRONG RESISTS
+    bot?.strong_resists.forEach((res, idx) => {
+      let line1 = onChart(res.price, res.start_index)
+      let line2 = onChart(res.price, res.end_index)
+      drawLine(ctx, line1.x1, line1.y1, line2.x1, line1.y2, upColor)
+      // drawLine(ctx, line2.x1, line1.y1, line1.x2, line1.y2, '#00FF8C50', [8, 6]) // tail
+    });;
+
+
+    // STRONG SUPPORTS
+    bot?.strong_supports.forEach((sup, idx) => {
+      let line1 = onChart(sup.price, sup.start_index)
+      let line2 = onChart(sup.price, sup.end_index)
+      drawLine(ctx, line1.x1, line1.y1, line2.x1, line1.y2, downColor)
+      // drawLine(ctx, line2.x1, line1.y1, line1.x2, line1.y2, '#FF008850', [8, 6]) // tail
+    });
+
+
     // DRAW POSITIONS
-    // drawTrendLine(ctx, draw);
     var pnl = 0;
-    positions.forEach((position, idx) => {
-      // if (position["type"] == "LONG") {
-      drawPosition(ctx, position, position["type"]);
+    bot.positions.forEach((position, idx) => {
+      let start = onChart(position.entryPrice, position.startIndex)
+      let end = onChart(position.exitPrice, position.endIndex)
+      let cord = {
+        x1: start.x1,
+        y1: start.y1,
+        x2: end.x1,
+        y2: end.y1
+      }
+      drawPosition(ctx, cord, position["type"]);
 
       // RESULT BOX
       let INVEST = 10; // $60 = Rs-5000
@@ -398,7 +386,8 @@ const CustomCandlestickChart = ({
 
     <canvas
       ref={canvasRef}
-      width={window.innerWidth * 20}
+      // width={window.innerWidth * 20}
+      width={(candleWidth * data.length) + window.innerWidth / 2}
       height={window.innerHeight}
       style={{
         backgroundColor: bgColor,

@@ -23,6 +23,7 @@ const drawTrendLineObj = (ctx, obj, color = "blue") => {
 
 const drawPosition = (ctx, draw, type = "LONG") => {
   ctx.beginPath();
+  ctx.setLineDash([]);
   ctx.moveTo(draw.x1, draw.y1);
   ctx.lineTo(draw.x2, draw.y2);
   ctx.strokeStyle =
@@ -33,8 +34,9 @@ const drawPosition = (ctx, draw, type = "LONG") => {
       : type == "LONG"
       ? "green"
       : "red"; // "#6f03fc";
-  // ctx.lineWidth = 4;
+  ctx.lineWidth = 3;
   ctx.stroke();
+  ctx.lineWidth = 1;
 };
 
 const drawTrendLine = (ctx, draw, color = "blue") => {
@@ -45,8 +47,10 @@ const drawTrendLine = (ctx, draw, color = "blue") => {
   ctx.stroke();
 };
 
-const drawLine = (ctx, x1, y1, x2, y2, color = "blue") => {
+const drawLine = (ctx, x1, y1, x2, y2, color = "blue", dash = null) => {
   ctx.beginPath();
+  if (dash) ctx.setLineDash(dash);
+  else ctx.setLineDash([]);
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.strokeStyle = color;
@@ -106,5 +110,5 @@ export {
   Mark,
   Text,
   image,
-  drawLine
+  drawLine,
 };
