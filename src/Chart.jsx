@@ -275,30 +275,45 @@ const CustomCandlestickChart = ({
     bot?.resists.forEach((res, idx) => {
       // let ch_1 = onChart(res.price, res.start_index)
       // let ch_2 = onChart(res.price, res.end_index)
-      // drawLine(ctx, ch_1.x1, ch_1.y1, ch_2.x1, ch_2.y1, upColor)
+      // drawLine(ctx, ch_1.x1, ch_1.y1, res.end_index ? ch_2.x1 : ch_2.x2, ch_2.y1, upColor)
+
 
       let hl_top_1 = onChart(res.hl_top, res.start_index)
       let hl_top_2 = onChart(res.hl_top, res.end_index)
-      drawLine(ctx, hl_top_1.x1, hl_top_1.y1, hl_top_2.x1, hl_top_2.y1, upColor + 60)
+      // drawLine(ctx, hl_top_1.x1, hl_top_1.y1, res.end_index ? hl_top_2.x1 : hl_top_2.x2, hl_top_2.y1, res?.breakout == 'await' ? upColor + 60 : 'blue')
 
       let hl_bot_1 = onChart(res.hl_bot, res.start_index)
-      let hl_bot_2 = onChart(res.hl_bot, res.end_index)
-      drawLine(ctx, hl_bot_1.x1, hl_bot_1.y1, hl_bot_2.x1, hl_bot_2.y1, upColor + 60)
+      // let hl_bot_2 = onChart(res.hl_bot, res.end_index)
+      // drawLine(ctx, hl_bot_1.x1, hl_bot_1.y1, res.end_index ? hl_bot_2.x1 : hl_bot_2.x2, hl_bot_2.y1, res?.breakout == 'await' ? upColor + 60 : 'blue')
+
+      // box draw
+      var w = (res.end_index ? hl_top_2.x1 : hl_top_2.x2) - hl_top_1.x1
+      var h = hl_bot_1.y1 - hl_top_1.y1 
+      ctx.fillStyle = res?.breakout == 'await' ? upColor + 20 : '#511cff20'
+      ctx.fillRect(hl_top_1.x1, hl_top_1.y1, w, h);
+
+
 
     });
 
     bot?.supports.forEach((sup, idx) => {
       // let ch_1 = onChart(sup.price, sup.start_index)
       // let ch_2 = onChart(sup.price, sup.end_index)
-      // drawLine(ctx, ch_1.x1, ch_1.y1, ch_2.x1, ch_2.y1, downColor)
+      // drawLine(ctx, ch_1.x1, ch_1.y1, sup.end_index ? ch_2.x1 : ch_2.x2, ch_2.y1, downColor)
 
       let lh_top_1 = onChart(sup.lh_top, sup.start_index)
       let lh_top_2 = onChart(sup.lh_top, sup.end_index)
-      drawLine(ctx, lh_top_1.x1, lh_top_1.y1, lh_top_2.x1, lh_top_2.y1, downColor + 60)
+      // drawLine(ctx, lh_top_1.x1, lh_top_1.y1, sup.end_index ? lh_top_2.x1 : lh_top_2.x2, lh_top_2.y1, sup?.breakout == 'await' ? downColor + 60 : 'blue')
 
       let lh_bot_1 = onChart(sup.lh_bot, sup.start_index)
       let lh_bot_2 = onChart(sup.lh_bot, sup.end_index)
-      drawLine(ctx, lh_bot_1.x1, lh_bot_1.y1, lh_bot_2.x1, lh_bot_2.y1, downColor + 60)
+      // drawLine(ctx, lh_bot_1.x1, lh_bot_1.y1, sup.end_index ? lh_bot_2.x1 : lh_bot_2.x2, lh_bot_2.y1, sup?.breakout == 'await' ? downColor + 60 : 'blue')
+
+      // box draw
+      var w = (sup.end_index ? lh_top_2.x1 : lh_top_2.x2) - lh_top_1.x1
+      var h = lh_bot_2.y1-lh_top_1.y1
+      ctx.fillStyle = sup?.breakout == 'await' ? downColor + 15 : '#511cff20'
+      ctx.fillRect(lh_top_1.x1, lh_top_1.y1, w, h);
 
     });
 
@@ -307,7 +322,7 @@ const CustomCandlestickChart = ({
     bot?.strong_resists.forEach((res, idx) => {
       let line1 = onChart(res.price, res.start_index)
       let line2 = onChart(res.price, res.end_index)
-      drawLine(ctx, line1.x1, line1.y1, line2.x1, line1.y2, upColor)
+      drawLine(ctx, line1.x1, line1.y1, res?.end_index ? line2.x1 : line1.x2, line1.y2, upColor,  [4, 6])
       // drawLine(ctx, line2.x1, line1.y1, line1.x2, line1.y2, '#00FF8C50', [8, 6]) // tail
     });;
 
@@ -316,7 +331,7 @@ const CustomCandlestickChart = ({
     bot?.strong_supports.forEach((sup, idx) => {
       let line1 = onChart(sup.price, sup.start_index)
       let line2 = onChart(sup.price, sup.end_index)
-      drawLine(ctx, line1.x1, line1.y1, line2.x1, line1.y2, downColor)
+      drawLine(ctx, line1.x1, line1.y1, sup?.end_index ? line2.x1 : line1.x2, line1.y2, downColor, [4, 6])
       // drawLine(ctx, line2.x1, line1.y1, line1.x2, line1.y2, '#FF008850', [8, 6]) // tail
     });
 

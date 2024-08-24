@@ -12,7 +12,7 @@ with open('test/2024-03-11.json', 'r') as file:
 from help.trv import pivot_high, pivot_low
 
 class TradingBot:
-    def __init__(self, symbol='BTC/USDT'):
+    def __init__(self, symbol='XRP/USDT'):
         # self.exchange = ccxt.binance({
         #     # 'apiKey': api_key,
         #     # 'secret': api_secret,
@@ -40,6 +40,7 @@ class TradingBot:
         self.lh = 0
         self.strong_support = None
         self.strong_resist = None
+        self.position_temp = {}
         self.positions = []
         self.current_trade = None
         self.marks = [] #view
@@ -70,11 +71,15 @@ class TradingBot:
         hl_bot = 0
         lh_top = 0
         lh_bot = 0
+        rangeStart = 0
+        topEdge = 0
+        bottomEdge = 0
    
 
         for index, cand in enumerate(self.candles):
             # print(f"Index: {index}, cand: {cand}")
             if index < config.period : continue
+            end = index == len(self.candles)-1
             delay_index = max(1, index - config.period)
        
             
@@ -85,7 +90,7 @@ class TradingBot:
                 hl_top = price + (height * config.s_r_tolerance / 100) if self.hl is not None else None
                 hl_bot = price - (height * config.s_r_tolerance / 100) if self.hl is not None else None
                 self.resists[-1]["end_index"] = index
-                self.resists.append({"price": price, "start_index": index, "hl_top": hl_top, "hl_bot": hl_bot})
+                self.resists.append({"price": price, "start_index": index, "hl_top": hl_top, "hl_bot": hl_bot, "breakout": self.breakout})
                 return hl_top, hl_bot
             
             def support(price):
@@ -94,12 +99,13 @@ class TradingBot:
                 lh_top = price + (height * config.s_r_tolerance / 100) if self.lh is not None else None
                 lh_bot = price - (height * config.s_r_tolerance / 100) if self.lh is not None else None
                 self.supports[-1]["end_index"] = index
-                self.supports.append({"price": price, "start_index": index, "lh_top": lh_top, "lh_bot": lh_bot})
+                self.supports.append({"price": price, "start_index": index, "lh_top": lh_top, "lh_bot": lh_bot, "breakout": self.breakout})
                 return lh_top, lh_bot
             
             def ENTRY(type='LONG'):
                 if self.isOrderPlaced: return
                 self.isOrderPlaced = True
+                self.position_temp = {"entryPrice": cand[1], "startTime": cand[0], "startIndex": index, "type": type}
                 self.positions.append({"entryPrice": cand[1], "startTime": cand[0], "startIndex": index, "type": type})
                 pass
 
@@ -116,6 +122,8 @@ class TradingBot:
             hls_keys = [x for x in hls if x != '']
             if hls[-1]: 
                 hl_top, hl_bot = resist(hls[-1])
+                # lh_top, lh_bot = support(self.lh) #update box
+
                 # STRONG RESIST
                 related_highs = [x for x in hls_keys[-2:] if x < hl_top and  x > hl_bot]
                 if len(related_highs) > 1:
@@ -131,43 +139,87 @@ class TradingBot:
             lhs_keys = [x for x in lhs if x != '']
             if lhs[-1]: 
                 lh_top, lh_bot = support(lhs[-1])
+                # hl_top, hl_bot = resist(self.hl) #update box
                 # STRONG SUPPORT
                 related_lows = [x for x in lhs_keys[-2:] if x < lh_top and  x > lh_bot]
                 if len(related_lows) > 1:
                     self.strong_supports[-1]["end_index"] = index
                     self.strong_supports.append({"price": lhs[-1], "start_index": index, "top": lh_top, "bot": lh_bot})
                     self.strong_support = lhs[-1]
-
                     pass #end
                 
-              
             if len(self.supports) < 1 or len(self.resists) < 1 or hl_top == None or hl_bot == None or lh_top == None or lh_bot == None: continue;
+            
             height = self.hl - self.lh 
+            hl_range = [x for x in self.resists if 'start_index' in x and x['start_index'] > rangeStart]
+            lh_range = [x for x in self.supports if 'start_index' in x and x['start_index'] > rangeStart]
+            
 
 
-    
-            # if index == len(self.candles)-1 : print("\n\nhl--->", hl_top, hl_bot, "\n\n")
-            # if index == 100 : print("lh--->", self.lh, lh_top, lh_bot)
-            if index == 150:
-                # support(self.hl)
-                # self.marks.append({"index": index, "price": cand[4]})
-                pass
+#   . . . . . . . . .  . . . . . . . . .    BULLISH    . . . . . . . . . . . . . . . . . . 
 
             if cand[1] > hl_top and len(hls_keys) > 0 and len(lhs_keys) > 0 and self.breakout == 'await':
-                if cand[1] > self.strong_resist:
+                if self.strong_resist and cand[1] > self.strong_resist:
                     self.breakout = 'bullish'
                     self.marks.append({"index": index, "price": cand[1], 'mark': 'bullish'})
-                    # print(index, hl_top, hl_bot, lh_top, lh_bot)
                     ENTRY()
+                    # lh_top, lh_bot = support(self.hl)
+
+                    rangeStart = index
+                    topEdge = cand[1]
                     continue;
-                    pass
                 
             if self.breakout == 'bullish':
+                topEdge = cand[1] if cand[1] > topEdge else topEdge 
+                # level 1
+                # if len(hl_range) == 1:
+                #     print(hl_range)
+                #     lh_top, lh_bot = support(self.resists[-2]['price'])
+                #     hl_top, hl_bot = resist(topEdge)
+
+
+                # level n
+                if len(lh_range) > 0 and cand[1] < self.lh:
+                    EXIT()
+                    self.breakout = 'await'
+                    hl_top, hl_bot = resist(topEdge)
+                    lh_top, lh_bot = support(self.lh)
+                    self.strong_supports[-1]["end_index"] = index
+                    self.strong_supports.append({"price": self.lh, "start_index": index, "top": lh_top, "bot": lh_bot})
+                    self.strong_support = self.lh
+                
+                # level n set resist as support
+                
+
+
+                # reverse
                 if cand[1] < hl_bot:
+                    if self.resists[-1]['breakout'] == 'await': 
+                        self.breakout = 'await'
+                        self.text.append({"index": index, "price": cand[1], 'text': 'reverse', 'color': '#fff'})
+                        EXIT()
+
+
+
+#   . . . . . . . . .  . . . . . . . . .    BEARISH    . . . . . . . . . . . . . . . . . . 
+
+            if cand[1] < lh_bot and len(hls_keys) > 0 and len(lhs_keys) > 0 and self.breakout == 'await':
+                if self.strong_support and cand[1] < self.strong_support:
+                    self.breakout = 'bearish'
+                    self.marks.append({"index": index, "price": cand[1], 'mark': 'bearish'})
+                    # print(index, hl_top, hl_bot, lh_top, lh_bot)
+                    ENTRY('SHORT')
+
+                    rangeStart = index
+                    bottomEdge = cand[1]
+                    continue;
+                
+            if self.breakout == 'bearish':
+                bottomEdge = cand[1] if cand[1] > bottomEdge else bottomEdge 
+                if cand[1] > lh_top :
                     self.breakout = 'await'
                     self.text.append({"index": index, "price": cand[1], 'text': 'reverse', 'color': '#fff'})
                     EXIT()
-                    pass
                     
                
 

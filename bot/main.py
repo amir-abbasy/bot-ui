@@ -58,6 +58,7 @@ async def bot_backend():
     return response
 
 
+# uvicorn main:app --reload
 
 @app.get("/ping")
 async def ping():

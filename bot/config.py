@@ -1,4 +1,4 @@
-s_r_tolerance = 25  # 100%
+s_r_tolerance = 20  # 100%
 period = 20
 
 leftValue = 100
