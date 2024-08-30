@@ -182,10 +182,10 @@ const CustomCandlestickChart = ({
       // drawRect(ctx, { x1: x, y1: resistBoxStart, w: 10, h: resistBoxEnd-resistBoxStart }, upColor+20);
 
       // breakout
-      if (breakout == 'bullish') Mark(ctx, { x1: x, y1: 30 }, "#00ff00", 4, 1)
-      if (breakout == 'bearish') Mark(ctx, { x1: x, y1: 30 }, "#ff0000", 4, 1)
-      if (breakout == 'await') Mark(ctx, { x1: x, y1: 30 }, "#cccccc50", 4, 1)
-
+      if (bot.breakouts[index] == 'bullish') Mark(ctx, { x1: x, y1: 30 }, "#00ff00", 4, 1)
+      if (bot.breakouts[index] == 'bearish') Mark(ctx, { x1: x, y1: 30 }, "#ff0000", 4, 1)
+      if (bot.breakouts[index] == 'await') Mark(ctx, { x1: x, y1: 30 }, "#cccccc50", 4, 1)
+        
 
 
       // // High Low shadow
@@ -292,8 +292,6 @@ const CustomCandlestickChart = ({
       ctx.fillStyle = res?.breakout == 'await' ? upColor + 20 : '#511cff20'
       ctx.fillRect(hl_top_1.x1, hl_top_1.y1, w, h);
 
-
-
     });
 
     bot?.supports.forEach((sup, idx) => {
@@ -312,7 +310,7 @@ const CustomCandlestickChart = ({
       // box draw
       var w = (sup.end_index ? lh_top_2.x1 : lh_top_2.x2) - lh_top_1.x1
       var h = lh_bot_2.y1-lh_top_1.y1
-      ctx.fillStyle = sup?.breakout == 'await' ? downColor + 15 : '#511cff20'
+      ctx.fillStyle = sup?.breakout == 'await' ? downColor + 15 : '#ff1c9920'
       ctx.fillRect(lh_top_1.x1, lh_top_1.y1, w, h);
 
     });

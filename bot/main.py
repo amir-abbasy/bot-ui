@@ -48,6 +48,8 @@ async def bot_backend():
         'text': bot.text,
         'strong_supports': bot.strong_supports,
         'strong_resists': bot.strong_resists,
+        'breakouts': bot.breakouts,
+        
 
         'positions': bot.positions,
         'h_points': bot.h_points,
