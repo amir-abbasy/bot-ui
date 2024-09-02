@@ -37,7 +37,8 @@ function App() {
   const { events, activeCand, setActiveCand, setEvent, setEventClear } = useStore()
 
 
-  const modifyData = ohlcv_data => ohlcv_data.slice(viewConfig.data_offet, viewConfig.data_len).map((_, k) => ({ t: _[0], o: _[1], h: _[2], l: _[3], c: _[4], v: _[5] }));
+  // const modifyData = ohlcv_data => ohlcv_data.slice(viewConfig.data_offet, viewConfig.data_len).map((_, k) => ({ t: _[0], o: _[1], h: _[2], l: _[3], c: _[4], v: _[5] }));
+  const modifyData = ohlcv_data => ohlcv_data.map((_, k) => ({ t: _[0], o: _[1], h: _[2], l: _[3], c: _[4], v: _[5] }));
 
 
   useEffect(() => {

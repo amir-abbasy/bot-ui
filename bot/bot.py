@@ -13,20 +13,22 @@ from help.trv import pivot_high, pivot_low
 
 class TradingBot:
     def __init__(self, symbol='XRP/USDT'):
-        self.exchange = ccxt.binance({
-            # 'apiKey': api_key,
-            # 'secret': api_secret,
-            'enableRateLimit': True,
-            'options': {
-                'defaultType': 'future'  # Use futures market type
-            },
-            'urls': {
-                'api': {
-                    'public': 'https://testnet.binancefuture.com/fapi/v1',
-                    'private': 'https://testnet.binancefuture.com/fapi/v1',
-                }
-            }
-        })
+        # self.exchange = ccxt.binance({
+        #     # 'apiKey': api_key,
+        #     # 'secret': api_secret,
+        #     'enableRateLimit': True,
+        #     'options': {
+        #         'defaultType': 'future'  # Use futures market type
+        #     },
+        #     'urls': {
+        #         'api': {
+        #             'public': 'https://testnet.binancefuture.com/fapi/v1',
+        #             'private': 'https://testnet.binancefuture.com/fapi/v1',
+        #         }
+        #     }
+        # })
+        # self.exchange.load_markets()  # Load markets to ensure symbol is correct
+
         self.symbol = symbol
         self.timeframe = '15m'
         self.candles = []
@@ -52,9 +54,44 @@ class TradingBot:
 
 
     def fetch_candles(self):
+
+        # # Set your symbol, timeframe, and total desired number of candles
+        # symbol = 'BTC/USDT'
+        # timeframe = '15m'  # Replace with your desired timeframe
+        # total_candles = 5000  # Total number of candles you want to fetch
+        # # Fetching in chunks
+        # all_candles = []  # This will store all the candles
+        # since_date = '2024-07-01T00:00:00Z'  # Input your start date in ISO format
+        # since = self.exchange.parse8601(since_date)
+
+
+        # while True:
+        #     # Fetch a batch of candles from the since date
+        #     candles = self.exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1000)
+
+        #     # Break the loop if no candles are returned (end of data)
+        #     if not candles:
+        #         break
+
+        #     # Append the fetched candles to the list
+        #     all_candles.extend(candles)
+
+        #     # Update the since date to the timestamp of the last candle fetched + 1 millisecond
+        #     since = candles[-1][0] + 1
+        #         # Avoid fetching more than needed
+        #     if len(all_candles) >= total_candles:
+        #         break
+
+        #     asyncio.sleep(1)
+        # self.candles = all_candles
+        # print(len(self.candles))
+
+
+
+        
         # Fetch OHLCV data
-        self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
-        # self.candles = ohlcv_data
+        # self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
+        self.candles = ohlcv_data[:2000]
         # Unpack the OHLCV data into separate lists
         self.times, self.opens, self.highs, self.lows, self.closes, self.volumes = zip(*self.candles)
         # Convert them back to lists, if necessary (as zip returns tuples)

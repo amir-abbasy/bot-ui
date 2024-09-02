@@ -51,7 +51,7 @@ const CustomCandlestickChart = ({
 }) => {
   const canvasRef = useRef(null);
   const { setActiveCand, setEvent } = useStore()
-  console.log(bot?.candles);
+  // console.log(bot?.candles);
 
 
 
