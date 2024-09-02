@@ -51,6 +51,8 @@ const CustomCandlestickChart = ({
 }) => {
   const canvasRef = useRef(null);
   const { setActiveCand, setEvent } = useStore()
+  console.log(bot?.candles);
+
 
 
   const handleMouseMove = (e) => {
@@ -227,6 +229,7 @@ const CustomCandlestickChart = ({
         ctx.fillText(text, x, y + 25);
       }
       // drawTextBox(x, yClose, 'LL', 'red');
+      
 
 
       if (bot['marks']) {
