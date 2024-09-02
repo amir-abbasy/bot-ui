@@ -6,13 +6,13 @@ import json
 import config
 from help.utils import percentage_difference 
 # Load the JSON file
-with open('test/2024-03-11.json', 'r') as file:
+with open('test/live.json', 'r') as file:
     ohlcv_data = json.load(file)
 
 from help.trv import pivot_high, pivot_low
 
 class TradingBot:
-    def __init__(self, symbol='LTC/USDT'):
+    def __init__(self, symbol='XRP/USDT'):
         self.exchange = ccxt.binance({
             # 'apiKey': api_key,
             # 'secret': api_secret,
@@ -97,9 +97,11 @@ class TradingBot:
             
             # Member functions
             def resist(price):
+                # change = percentage_difference(price, self.lh)
+                # if abs(change) < 1: return
                 self.hl = price # update 
                 height = self.hl - self.lh
-            
+               
                 hl_top = price + (height * config.s_r_tolerance / 100) if self.hl is not None else None
                 hl_bot = price - (height * config.s_r_tolerance / 100) if self.hl is not None else None
                 self.resists[-1]["end_index"] = index
@@ -107,6 +109,8 @@ class TradingBot:
                 return hl_top, hl_bot
             
             def support(price):
+                # change = percentage_difference(self.hl,price)
+                # if abs(change) < 1: return
                 self.lh = price # update 
                 height = self.hl - self.lh   
 
@@ -308,6 +312,10 @@ class TradingBot:
                         self.breakout = 'await'
                         self.text.append({"index": index, "price": cand[1], 'text': 'reverse', 'color': 'yellow'})
                         EXIT()
+                        lh_top, lh_bot = support(bottomEdge)
+                        self.strong_supports[-1]["end_index"] = index
+                        self.strong_supports.append({"price": bottomEdge, "start_index": index, "top": lh_top, "bot": lh_bot})
+                        self.strong_support = bottomEdge
                         pass   
                 
                 # level n
@@ -343,6 +351,12 @@ class TradingBot:
                         trailing_change = percentage_difference(bottomEdge, cand[1])
                         if trailing_change > range_change/2: EXIT('Trailing')
                         pass
+
+                        
+                if self.isOrderPlaced == False and self.positions[-1]['exitPrice'] > cand[1] and hls[-1]:
+                    self.trailing = False
+                    ENTRY('SHORT')
+                    pass
 
 
 
