@@ -91,7 +91,7 @@ class TradingBot:
         
         # Fetch OHLCV data
         # self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
-        self.candles = ohlcv_data[:2000]
+        self.candles = ohlcv_data[2000:3200]
         # Unpack the OHLCV data into separate lists
         self.times, self.opens, self.highs, self.lows, self.closes, self.volumes = zip(*self.candles)
         # Convert them back to lists, if necessary (as zip returns tuples)
@@ -180,7 +180,7 @@ class TradingBot:
                 hls_keys.append(hls[-1])
                 hls_keys_range.append(hls[-1])
                 hl_top, hl_bot = resist(hls[-1])
-                # lh_top, lh_bot = support(self.lh) #update box
+                # if self.breakout != 'await' : lh_top, lh_bot = support(self.lh) #update box
 
                 # STRONG RESIST
                 related_highs = [x for x in hls_keys[-6:] if x < hl_top and  x > hl_bot]
@@ -199,7 +199,7 @@ class TradingBot:
                 lhs_keys.append(lhs[-1])
                 lhs_keys_range.append(lhs[-1])
                 lh_top, lh_bot = support(lhs[-1])
-                # hl_top, hl_bot = resist(self.hl) #update box
+                # if self.breakout != 'await' : hl_top, hl_bot = resist(self.hl) #update box
 
                 # STRONG SUPPORT
                 related_lows = [x for x in lhs_keys[-6:] if x < lh_top and  x > lh_bot]
@@ -392,7 +392,7 @@ class TradingBot:
                         
                 if self.isOrderPlaced == False and self.positions[-1]['exitPrice'] > cand[1] and hls[-1]:
                     self.trailing = False
-                    ENTRY('SHORT')
+                    # ENTRY('SHORT')
                     pass
 
 
