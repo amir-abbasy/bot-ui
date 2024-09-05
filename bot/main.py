@@ -42,8 +42,6 @@ async def bot_backend():
     response = {
         'supports': bot.supports,
         'resists': bot.resists,
-        # 'previous_trades': bot.previous_trades,
-        # 'current_trade': bot.current_trade,
         'marks': bot.marks,
         'text': bot.text,
         'strong_supports': bot.strong_supports,

@@ -4,7 +4,7 @@ import asyncio
 import pandas as pd
 import json
 import config
-from help.utils import percentage_difference 
+from help.utils import percentage_difference, is_saturday, is_between_saturday_sunday_noon
 # Load the JSON file
 with open('test/live.json', 'r') as file:
     ohlcv_data = json.load(file)
@@ -61,7 +61,7 @@ class TradingBot:
         # total_candles = 5000  # Total number of candles you want to fetch
         # # Fetching in chunks
         # all_candles = []  # This will store all the candles
-        # since_date = '2024-07-01T00:00:00Z'  # Input your start date in ISO format
+        # since_date = '2024-08-01T00:00:00Z'  # Input your start date in ISO format
         # since = self.exchange.parse8601(since_date)
 
 
@@ -84,14 +84,14 @@ class TradingBot:
 
         #     asyncio.sleep(1)
         # self.candles = all_candles
-        # print(len(self.candles))
+        # # print(len(self.candles))
 
 
 
         
         # Fetch OHLCV data
         # self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
-        self.candles = ohlcv_data[2000:3200]
+        self.candles = ohlcv_data[:2000]
         # Unpack the OHLCV data into separate lists
         self.times, self.opens, self.highs, self.lows, self.closes, self.volumes = zip(*self.candles)
         # Convert them back to lists, if necessary (as zip returns tuples)
@@ -215,6 +215,9 @@ class TradingBot:
             height = hls_keys[-1] - lhs_keys[-1] if hls_keys and lhs_keys else  self.hl - self.lh 
             hl_range = [x for x in self.resists if 'start_index' in x and x['start_index'] > rangeStart]
             lh_range = [x for x in self.supports if 'start_index' in x and x['start_index'] > rangeStart]
+
+
+            # if index > 200 and index < 260: print(index, self.strong_resist)
             
 
 #   . . . . . . . . . . . . . . . . . .    B U L L I S H    . . . . . . . . . . . . . . . . . . 
@@ -226,7 +229,6 @@ class TradingBot:
                     ENTRY()
                     if self.hl < self.strong_resist:
                         resist(self.strong_resist)
-
 
                     rangeStart = index
                     topEdge = cand[1]
@@ -292,15 +294,23 @@ class TradingBot:
                         make_strong_support()
                         pass 
 
+
                 # Trailing
                 if self.strong_support and self.strong_resist:
                     # range_change = percentage_difference(self.lh, self.hl)
                     range_change = abs(percentage_difference(self.strong_support, self.strong_resist))
                     if change > range_change and len(lhs_keys_range_) == 0: self.trailing = True
                     if self.trailing:
-                        trailing_change = percentage_difference(topEdge, cand[1])
+                        trailing_change = percentage_difference(cand[1], topEdge)
                         if trailing_change > range_change/2: EXIT('Trailing')
                         pass
+                
+                # reduce loss
+                if -.5 > change :
+                    EXIT('reduce loss .5%')
+                    pass
+
+
 
                     
 
@@ -332,10 +342,17 @@ class TradingBot:
                 bottomEdge = cand[1] if cand[1] < bottomEdge else bottomEdge
                 hls_keys_range_ = [x for x in lhs_keys_range if x < self.position_temp['entryPrice']]
                 bearish_cand = cand[1] < self.candles[index-2][4] 
+                change = percentage_difference(self.position_temp['entryPrice'], cand[1])
+
+
                 def make_strong_resist():
                     self.strong_resists[-1]["end_index"] = index
                     self.strong_resists.append({"price": self.hl, "start_index": index, "top": hl_top, "bot": hl_bot})
                     self.strong_resist = self.hl
+
+                    self.strong_supports[-1]["end_index"] = index
+                    self.strong_supports.append({"price": self.lh, "start_index": index, "top": lh_top, "bot": lh_bot})
+                    self.strong_support = self.lh
 
 
 
@@ -380,7 +397,6 @@ class TradingBot:
 
                 # Trailing
                 if self.strong_support and self.strong_resist:
-                    change = percentage_difference(self.position_temp['entryPrice'], cand[1])
                     # range_change = abs(percentage_difference(self.lh, self.hl))
                     range_change = abs(percentage_difference(self.strong_support, self.strong_resist))
                     if -range_change > change and len(hls_keys_range_) == 0: self.trailing = True
@@ -390,10 +406,23 @@ class TradingBot:
                         pass
 
                         
-                if self.isOrderPlaced == False and self.positions[-1]['exitPrice'] > cand[1] and hls[-1]:
+                if self.isOrderPlaced == False and self.positions[-1]['entryPrice'] > cand[1] and cand[1] < lh_bot:
                     self.trailing = False
-                    # ENTRY('SHORT')
+                    ENTRY('SHORT')
                     pass
+
+                           
+                # reduce loss
+                if change > .5:
+                    EXIT('reduce loss .5%')
+                    pass
+
+
+                if self.isOrderPlaced == False and lhs[-1]:
+                    # self.breakout = 'await'
+                    pass
+
+
 
 
 
