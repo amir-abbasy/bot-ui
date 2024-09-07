@@ -386,7 +386,7 @@ const CustomCandlestickChart = ({
       ctx.fillText("(" + diff.toFixed(2) + "%)", 70, (idx + 1) * 30);
       ctx.fillStyle = "#6f03fc";
       ctx.fillText(pnl.toFixed(2), 160, (idx + 1) * 30);
-      // console.log({pnl});
+      console.log({pnl});
     
     });
   };

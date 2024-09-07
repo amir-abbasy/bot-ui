@@ -2,11 +2,29 @@ import ccxt
 import time
 from datetime import datetime
 import json
+import logging
+
+# Set up the logger to write to log.txt
+logging.basicConfig(filename='log.txt', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+def log_action(action, details=""):
+    """
+    Logs CRUD actions with optional details.
+    """
+    logging.info(f"{action} - {details}")
+
+# CRUD Functions
+def log(item):
+    log_action("LOG", f"{item}")
+    # Your create logic here
+    return f"Created {item}"
+
 
 # Initialize your exchange
 exchange = ccxt.binance({
-    # 'apiKey': 'your_api_key',
-    # 'secret': 'your_api_secret',
+    'apiKey': '#',
+    'secret': '#',
     'enableRateLimit': True,
     'options': {
         'defaultType': 'future'  # Use 'spot' for spot trading, 'future' for Futures
@@ -18,9 +36,9 @@ exchange = ccxt.binance({
 #     ohlcv_data = json.load(file)
 
 
-symbol = 'BTC/USDT'
+symbol = 'XRP/USDT'
 timeframe = '1m'
-amount_usdt = 10  # Amount in USDT to spend
+amount_usdt = 3  # Amount in USDT to spend
 
 per = 14
 
@@ -112,10 +130,10 @@ def long(symbol, amount_usdt):
     # Calculate the amount of BTC to buy based on the current price
     ticker = exchange.fetch_ticker(symbol)
     price = ticker['last']  # Last price of the symbol
-    amount_btc = amount_usdt / price
+    amount_to_trade  = amount_usdt / price
     
     # Create a market buy order
-    order = exchange.create_market_order(symbol, 'buy', amount_btc)
+    order = exchange.create_market_order(symbol, 'buy', amount_to_trade *10)
     
     return order
 
@@ -130,18 +148,18 @@ def short(symbol, amount_usdt):
     # Calculate the amount of BTC to short based on the current price
     ticker = exchange.fetch_ticker(symbol)
     price = ticker['last']  # Last price of the symbol
-    amount_btc = amount_usdt / price
+    amount_to_trade  = amount_usdt / price
     
     # Create a market sell order to open a short position
-    order = exchange.create_market_order(symbol, 'sell', amount_btc)
+    order = exchange.create_market_order(symbol, 'sell', amount_to_trade *10)
     
     return order
 
-def close_position(symbol, amount_btc, side):
+def close_position(symbol, amount_to_trade , side):
     # Create a market order to close the position
     # If side is 'buy', it will close a short position
     # If side is 'sell', it will close a long position
-    order = exchange.create_market_order(symbol, side, amount_btc)
+    order = exchange.create_market_order(symbol, side, amount_to_trade)
     
     return order
 
@@ -149,52 +167,62 @@ def close_position(symbol, amount_btc, side):
 
 def run_bot():
     last_signal = None
+    amount_to_trade  = 0
 
 
     while True:
         print(datetime.now().strftime('%H:%M'))
 
         side = check_trade_signals()
-        amount_btc = 0
         if last_signal != 'LONG' and side == 'LONG':
-            last_signal = side
 
             # exit
             if last_signal: 
-                print('Close the short position')
-                close_order = close_position(symbol, amount_btc, 'buy')
+                print('Close the short position', amount_to_trade )
+                close_order = close_position(symbol, amount_to_trade , 'buy')
                 if close_order:
                     print("short closed successfully:", close_order)
+                    log("short closed successfully")
+                    log(str(close_order))
                     time.sleep(2)
 
 
             # entry
             print('LONG')
+            log("LONG")
             long_order = long(symbol, amount_usdt)
             if long_order:
                 print("Long order created successfully:", long_order)
+                log("Long order created successfully:")
+                log(str(long_order))
+                last_signal = side
             # Calculate the amount of BTC to sell
-            amount_btc = long_order['amount']  # Amount to close
+            amount_to_trade  = long_order['amount']  # Amount to close
             pass
 
 
         if last_signal != 'SHORT' and side == 'SHORT':
-            last_signal = side
 
             # exit
             if last_signal: 
-                print('Close the long position')
-                close_order = close_position(symbol, amount_btc, 'sell')
+                print('Close the long position', amount_to_trade )
+                close_order = close_position(symbol, amount_to_trade , 'sell')
                 if close_order:
                     print("long closed successfully:", close_order)
+                    log("long closed successfully:")
+                    log(str(close_order))
                     time.sleep(2)
 
             # entry
             print('SHORT')
+            log("SHORT")
             short_order = short(symbol, amount_usdt)
             if short_order:
                 print("Short order created successfully:", short_order)
-            amount_btc = long_order['amount']  # Amount to close
+                log("Short order created successfully:")
+                log(str(short_order))
+                last_signal = side
+            amount_to_trade  = short_order['amount']  # Amount to close
             pass 
         
         time.sleep(60)  # Run every 15 minutes

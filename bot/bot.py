@@ -13,21 +13,21 @@ from help.trv import pivot_high, pivot_low
 
 class TradingBot:
     def __init__(self, symbol='XRP/USDT'):
-        # self.exchange = ccxt.binance({
-        #     # 'apiKey': api_key,
-        #     # 'secret': api_secret,
-        #     'enableRateLimit': True,
-        #     'options': {
-        #         'defaultType': 'future'  # Use futures market type
-        #     },
-        #     'urls': {
-        #         'api': {
-        #             'public': 'https://testnet.binancefuture.com/fapi/v1',
-        #             'private': 'https://testnet.binancefuture.com/fapi/v1',
-        #         }
-        #     }
-        # })
-        # self.exchange.load_markets()  # Load markets to ensure symbol is correct
+        self.exchange = ccxt.binance({
+            # 'apiKey': api_key,
+            # 'secret': api_secret,
+            'enableRateLimit': True,
+            'options': {
+                'defaultType': 'future'  # Use futures market type
+            },
+            'urls': {
+                'api': {
+                    'public': 'https://testnet.binancefuture.com/fapi/v1',
+                    'private': 'https://testnet.binancefuture.com/fapi/v1',
+                }
+            }
+        })
+        self.exchange.load_markets()  # Load markets to ensure symbol is correct
 
         self.symbol = symbol
         self.timeframe = '15m'
@@ -55,35 +55,35 @@ class TradingBot:
 
     def fetch_candles(self):
 
-        # # Set your symbol, timeframe, and total desired number of candles
-        # symbol = 'BTC/USDT'
-        # timeframe = '15m'  # Replace with your desired timeframe
-        # total_candles = 5000  # Total number of candles you want to fetch
-        # # Fetching in chunks
-        # all_candles = []  # This will store all the candles
-        # since_date = '2024-08-01T00:00:00Z'  # Input your start date in ISO format
-        # since = self.exchange.parse8601(since_date)
+        # Set your symbol, timeframe, and total desired number of candles
+        symbol = 'BNB/USDT'
+        timeframe = '15m'  # Replace with your desired timeframe
+        total_candles = 3200  # Total number of candles you want to fetch
+        # Fetching in chunks
+        all_candles = []  # This will store all the candles
+        since_date = '2024-06-01T00:00:00Z'  # Input your start date in ISO format
+        since = self.exchange.parse8601(since_date)
 
 
-        # while True:
-        #     # Fetch a batch of candles from the since date
-        #     candles = self.exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1000)
+        while True:
+            # Fetch a batch of candles from the since date
+            candles = self.exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=1000)
 
-        #     # Break the loop if no candles are returned (end of data)
-        #     if not candles:
-        #         break
+            # Break the loop if no candles are returned (end of data)
+            if not candles:
+                break
 
-        #     # Append the fetched candles to the list
-        #     all_candles.extend(candles)
+            # Append the fetched candles to the list
+            all_candles.extend(candles)
 
-        #     # Update the since date to the timestamp of the last candle fetched + 1 millisecond
-        #     since = candles[-1][0] + 1
-        #         # Avoid fetching more than needed
-        #     if len(all_candles) >= total_candles:
-        #         break
+            # Update the since date to the timestamp of the last candle fetched + 1 millisecond
+            since = candles[-1][0] + 1
+                # Avoid fetching more than needed
+            if len(all_candles) >= total_candles:
+                break
 
-        #     asyncio.sleep(1)
-        # self.candles = all_candles
+            asyncio.sleep(1)
+        self.candles = all_candles
         # # print(len(self.candles))
 
 
@@ -91,7 +91,7 @@ class TradingBot:
         
         # Fetch OHLCV data
         # self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
-        self.candles = ohlcv_data[:2000]
+        # self.candles = ohlcv_data[:1775][:1300]
         # Unpack the OHLCV data into separate lists
         self.times, self.opens, self.highs, self.lows, self.closes, self.volumes = zip(*self.candles)
         # Convert them back to lists, if necessary (as zip returns tuples)
@@ -183,7 +183,7 @@ class TradingBot:
                 # if self.breakout != 'await' : lh_top, lh_bot = support(self.lh) #update box
 
                 # STRONG RESIST
-                related_highs = [x for x in hls_keys[-6:] if x < hl_top and  x > hl_bot]
+                related_highs = [x for x in hls_keys[-6:] if x < hl_top and x > hl_bot]
                 if len(related_highs) > 1:
                     self.strong_resists[-1]["end_index"] = index
                     self.strong_resists.append({"price": hls[-1], "start_index": index, "top": hl_top, "bot": hl_bot})
@@ -241,7 +241,7 @@ class TradingBot:
             # analyse  
             if self.breakout == 'bullish':
                 topEdge = cand[1] if cand[1] > topEdge else topEdge 
-                lhs_keys_range_ = [x for x in lhs_keys_range if x > self.position_temp['entryPrice']]
+                lhs_keys_range_ = [x for x in lhs_keys_range if x > self.strong_resist]
                 bearish_cand = cand[1] < self.candles[index-2][4] 
                 change = percentage_difference(self.position_temp['entryPrice'], cand[1])
 
@@ -299,6 +299,7 @@ class TradingBot:
                 if self.strong_support and self.strong_resist:
                     # range_change = percentage_difference(self.lh, self.hl)
                     range_change = abs(percentage_difference(self.strong_support, self.strong_resist))
+                    range_change = range_change if range_change > 1 else 1
                     if change > range_change and len(lhs_keys_range_) == 0: self.trailing = True
                     if self.trailing:
                         trailing_change = percentage_difference(cand[1], topEdge)
@@ -306,8 +307,9 @@ class TradingBot:
                         pass
                 
                 # reduce loss
-                if -.5 > change :
+                if -.5 > change:
                     EXIT('reduce loss .5%')
+                    # hl_top, hl_bot = resist(topEdge)
                     pass
 
 
@@ -340,7 +342,7 @@ class TradingBot:
             # analyse  
             if self.breakout == 'bearish':
                 bottomEdge = cand[1] if cand[1] < bottomEdge else bottomEdge
-                hls_keys_range_ = [x for x in lhs_keys_range if x < self.position_temp['entryPrice']]
+                hls_keys_range_ = [x for x in lhs_keys_range if x < self.strong_support]
                 bearish_cand = cand[1] < self.candles[index-2][4] 
                 change = percentage_difference(self.position_temp['entryPrice'], cand[1])
 
@@ -395,14 +397,18 @@ class TradingBot:
                         make_strong_resist()
                     pass 
 
+                # if index > 300 and index < 375:
+                #     print(index, len(hls_keys_range_)) 
+
                 # Trailing
                 if self.strong_support and self.strong_resist:
                     # range_change = abs(percentage_difference(self.lh, self.hl))
                     range_change = abs(percentage_difference(self.strong_support, self.strong_resist))
+                    range_change = range_change if range_change > 1 else 1
                     if -range_change > change and len(hls_keys_range_) == 0: self.trailing = True
                     if self.trailing:
                         trailing_change = percentage_difference(bottomEdge, cand[1])
-                        if trailing_change > range_change/2: EXIT('Trailing')
+                        if trailing_change > range_change/2: EXIT(f'Trailing {trailing_change:.2f}, {(range_change / 2):.2f}')
                         pass
 
                         
@@ -415,14 +421,8 @@ class TradingBot:
                 # reduce loss
                 if change > .5:
                     EXIT('reduce loss .5%')
+                    # lh_top, lh_bot = support(bottomEdge)
                     pass
-
-
-                if self.isOrderPlaced == False and lhs[-1]:
-                    # self.breakout = 'await'
-                    pass
-
-
 
 
 
