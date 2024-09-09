@@ -20,6 +20,11 @@
     font-family: sans-serif;
     scrollbar-width: thin;
     /* scrollbar-color: #00000050 #ccc; */
+
+}
+
+body{
+    background-color: black;
 }
 
 canvas {
@@ -39,6 +44,14 @@ input button {
     width: 100px;
     border: 0;
     outline-width: 0;
+}
+
+
+
+.main {
+    background-color: black;
+    color: white;
+    font-size: 14px;
 }
 
 .dashboard {
@@ -70,4 +83,21 @@ input button {
 
 .bold {
     font-weight: 600;
+}
+
+.paper {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.chart-card {
+    padding: 10px;
+    border: 1px solid rgb(20, 20, 20);
+    margin: 6px;
+
+}
+
+.pos-card {
+    display: flex;
+    font-size: 12px;
 }

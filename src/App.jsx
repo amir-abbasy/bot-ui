@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import CustomCandlestickChart from "./Chart.jsx";
 // import CustomCandlestickChart from "./ChartTBR.jsx";
 // import CustomCandlestickChart from "./ChartRSI.jsx";
+import Paper from "./Paper.jsx";
 import JsonLoader from './_fun/JsonLoader.jsx'
 import botConfig from "./botConfig";
 import {
@@ -19,11 +20,7 @@ const playSpeed = 4
 
 
 
-
-
-
-
-function App() {
+function ChartView() {
   const [fullData, setFullData] = useState([]);
   const [data, setData] = useState([]);
   const [bot, setBot] = useState();
@@ -97,18 +94,22 @@ function App() {
     const handleScroll = (event) => {
       event.preventDefault();
       const container = scrollableRef.current;
-      const speed = event.shiftKey ? 0.1 : 3;
-      container.scrollLeft += event.deltaY * speed;
+      if (container) {
+        const speed = event.shiftKey ? 0.1 : 3;
+        container.scrollLeft += event.deltaY * speed;
+      }
     };
 
-    // Add the event listener with passive: false option
-    scrollableRef.current.addEventListener("wheel", handleScroll, {
-      passive: false,
-    });
+    const container = scrollableRef.current;
+    if (container) {
+      container.addEventListener('wheel', handleScroll, { passive: false });
+    }
 
     // Clean up the event listener when the component unmounts
     return () => {
-      scrollableRef.current.removeEventListener("wheel", handleScroll);
+      if (container) {
+        container.removeEventListener('wheel', handleScroll);
+      }
     };
   }, []);
 
@@ -287,8 +288,35 @@ function App() {
 }
 
 
-export default App;
 
+
+
+export default function App() {
+  // State to track the current view
+  const [view, setView] = useState('paper');
+
+  // Function to switch views
+  const renderView = () => {
+    switch (view) {
+      case 'home':
+        return <ChartView />;
+      case 'paper':
+        return <Paper />;
+      default:
+        return <ChartView />;
+    }
+  };
+
+  return (
+    <div className="main" >
+      <nav>
+        <button onClick={() => setView('home')}>Home</button>
+        <button onClick={() => setView('paper')}>Paper</button>
+      </nav>
+      {renderView()}
+    </div>
+  );
+}
 
 
 
