@@ -293,12 +293,12 @@ function ChartView() {
 
 export default function App() {
   // State to track the current view
-  const [view, setView] = useState('paper');
+  const [view, setView] = useState('chart');
 
   // Function to switch views
   const renderView = () => {
     switch (view) {
-      case 'home':
+      case 'chart':
         return <ChartView />;
       case 'paper':
         return <Paper />;
@@ -310,8 +310,8 @@ export default function App() {
   return (
     <div className="main" >
       <nav>
-        <button onClick={() => setView('home')}>Home</button>
-        <button onClick={() => setView('paper')}>Paper</button>
+        <button onClick={() => setView('home')} className="mr-4">Home</button>
+        <button onClick={() => setView('paper')} className="mr-4">Paper</button>
       </nav>
       {renderView()}
     </div>

@@ -6,7 +6,7 @@ import json
 import config
 from help.utils import percentage_difference, is_saturday, is_between_saturday_sunday_noon
 # Load the JSON file
-with open('test/live.json', 'r') as file:
+with open('test/btc/BTC_2023_07.json', 'r') as file:
     ohlcv_data = json.load(file)
 
 from help.trv import pivot_high, pivot_low
@@ -92,7 +92,7 @@ class TradingBot:
             # # print(len(self.candles))
         else:
             # self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
-            self.candles = ohlcv_data[:1775][:1300]
+            self.candles = ohlcv_data[:1215]
 
      
         # Unpack the OHLCV data into separate lists
@@ -190,7 +190,7 @@ class TradingBot:
                 if len(related_highs) > 1:
                     self.strong_resists[-1]["end_index"] = index
                     self.strong_resists.append({"price": hls[-1], "start_index": index, "top": hl_top, "bot": hl_bot})
-                    self.strong_resist = hls[-1]
+                    self.strong_resist = max(related_highs) #hls[-1]
                     pass #end
 
 
@@ -209,7 +209,7 @@ class TradingBot:
                 if len(related_lows) > 1:
                     self.strong_supports[-1]["end_index"] = index
                     self.strong_supports.append({"price": lhs[-1], "start_index": index, "top": lh_top, "bot": lh_bot})
-                    self.strong_support = lhs[-1]
+                    self.strong_support =  min(related_lows) #lhs[-1]
                     pass #end
                 
             if len(self.supports) < 1 or len(self.resists) < 1 or hl_top == None or hl_bot == None or lh_top == None or lh_bot == None or len(hls_keys) < 3 or len(lhs_keys) < 3: continue;

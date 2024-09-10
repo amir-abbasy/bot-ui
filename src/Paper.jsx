@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { calculatePercentage, percentageChange } from './_fun/helpers';
+import { getMonthName } from './_fun/draw';
+
 
 function calculateProfitLoss(position) {
   // RESULT BOX
@@ -49,23 +51,32 @@ function Paper() {
   }, []);
 
   if (!data) return <p>Analysing...</p>
+
+  var total = 0
+
   return (
     <div className='paper'>
       {data.map((chart, idx) => {
-        var pnl = 0
+        let pnl = chart.positions.reduce((total, pos) => {
+          return total + calculateProfitLoss(pos);
+        }, 0);
 
-        return <div key={idx} className='chart-card'>
-          <p>{chart.date}</p>
-          {chart.positions.map((pos, id) => {
-            var pl = calculateProfitLoss(pos)
-            pnl += pl
-            return <div key={id} className='pos-card'>
-              <span style={{ color: pl > 0 ? 'green' : '#700f0f' }}>{pl.toFixed(2)}</span>
-            </div>
-          })}
-          <p style={{ color: pnl > 0 ? 'green' : 'red' }}>{pnl.toFixed(2)}</p>
+        total += pnl
+
+
+        return <div key={idx} className={`chart-card ${pnl > 0 ? 'bg-[#00ff8420]' : 'bg-[#ff000010]'}`} >
+          <p><span className="opacity-40 mr-2">{chart.date+1}</span>{getMonthName(chart.date)}</p>
+          <p className="text-xl " style={{ color: pnl > 0 ? 'green' : 'red' }}>{pnl.toFixed(2)}</p>
+          <div className='pos-card'>
+            {chart.positions.map((pos, id) => {
+              var pl = calculateProfitLoss(pos)
+              return <span key={id} style={{ color: pl > 0 ? 'green' : '#700f0f' }}>{pl.toFixed(2)}</span>
+            })}
+          </div>
         </div>
       })}
+
+      <h1 style={{ color: total > 0 ? 'green' : 'red' }}>{total.toFixed(2)}</h1>
 
     </div>
   )

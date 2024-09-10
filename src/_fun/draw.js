@@ -102,6 +102,16 @@ const image = (ctx, src = "bullish", x = 0, y = 0, w = 30, h = 30) => {
   img.src = icons[src];
 };
 
+function getMonthName(monthNumber) {
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  
+  return monthNames[monthNumber];  // monthNumber should be between 0 and 11
+}
+
+
 export {
   drawPosition,
   drawTrendLineObj,
@@ -111,4 +121,5 @@ export {
   Text,
   image,
   drawLine,
+  getMonthName
 };
