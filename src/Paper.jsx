@@ -76,7 +76,7 @@ function Paper() {
         </div>
       })}
 
-      <h1 style={{ color: total > 0 ? 'green' : 'red' }}>{total.toFixed(2)}</h1>
+      <h1 style={{ color: total > 0 ? 'green' : 'red' }}>{total.toFixed(2)}<span className='text-white opacity-30'> {(total*4).toFixed(2)} / 40</span></h1>
 
     </div>
   )
