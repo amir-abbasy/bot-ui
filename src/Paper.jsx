@@ -65,7 +65,7 @@ function Paper() {
 
 
         return <div key={idx} className={`chart-card ${pnl > 0 ? 'bg-[#00ff8420]' : 'bg-[#ff000010]'}`} >
-          <p><span className="opacity-40 mr-2">{chart.date+1}</span>{getMonthName(chart.date)}</p>
+          <p className="opacity-40"><span className="mr-2">{chart.date+1}</span>{getMonthName(chart.date)}</p>
           <p className="text-xl " style={{ color: pnl > 0 ? 'green' : 'red' }}>{pnl.toFixed(2)}</p>
           <div className='pos-card'>
             {chart.positions.map((pos, id) => {

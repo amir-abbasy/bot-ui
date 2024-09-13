@@ -92,9 +92,7 @@ class TradingBot:
             # # print(len(self.candles))
         else:
             # self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
-            # self.candles = ohlcv_data[:1100]
-            # self.candles = ohlcv_data[1100:(1100*2)]
-            self.candles = ohlcv_data[(1100*2):]
+            self.candles = ohlcv_data[:1215]
 
      
         # Unpack the OHLCV data into separate lists
@@ -192,8 +190,8 @@ class TradingBot:
                 # avg_highs = [value for value in hls_keys if abs(((value - hls[-1]) / hls[-1]) * 100) < (range_change/2)]
                 if len(related_highs) > 1:
                     self.strong_resists[-1]["end_index"] = index
-                    self.strong_resists.append({"price": max(hls_keys[-6:]), "start_index": index, "top": hl_top, "bot": hl_bot})
-                    self.strong_resist = max(hls_keys[-6:]) #hls[-1]
+                    self.strong_resists.append({"price": hls[-1], "start_index": index, "top": hl_top, "bot": hl_bot})
+                    self.strong_resist = max(related_highs) #hls[-1]
                     pass #end
 
 
@@ -209,26 +207,11 @@ class TradingBot:
 
                 # STRONG SUPPORT
                 related_lows = [x for x in lhs_keys[-6:] if x < lh_top and  x > lh_bot]
-                # if index < 325 : print(index, hls)
-                range_change = abs(percentage_difference(lhs[-1], self.strong_resist if self.strong_resist else max(lhs_keys)))
-                # range_change = abs(percentage_difference(lhs[-1], hls[-1]))
-                avg_lows = [value for value in lhs_keys[-6:] if abs(((value - lhs[-1]) / lhs[-1]) * 100) < (range_change/2)]
-                if index > 550  and index < 640:
-                    print(index, avg_lows, min(avg_lows))
-                
-                # support = min(avg_lows) if avg_lows else lhs[-1]
-                support_ = min(lhs_keys[-6:]) # lhs[-1]
-                print("support:", support)
-
                 if len(related_lows) > 1:
                     self.strong_supports[-1]["end_index"] = index
-                    self.strong_supports.append({"price": support_, "start_index": index, "top": lh_top, "bot": lh_bot })
-                    self.strong_support = support_
+                    self.strong_supports.append({"price": lhs[-1], "start_index": index, "top": lh_top, "bot": lh_bot})
+                    self.strong_support =  min(related_lows) #lhs[-1]
                     pass #end
-
-
-
-
                 
             if len(self.supports) < 1 or len(self.resists) < 1 or hl_top == None or hl_bot == None or lh_top == None or lh_bot == None or len(hls_keys) < 3 or len(lhs_keys) < 3: continue;
             
