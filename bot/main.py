@@ -64,7 +64,9 @@ async def bot_backend():
     
     for date in dates:
         # file_path = f"../src/data/ohlcv/{date}.json"
-        file_path = f"./test/btc/BTC_2023_{date+1:02d}.json"
+        # file_path = f"./test/btc/BTC_2023_{date+1:02d}.json"
+        # file_path = f"./test/btc/BTC_2024_{date+1:02d}.json"
+        file_path = f"./test/xrp/XRP_2023_{date+1:02d}.json"
 
         try:
             with open(file_path, "r") as file:

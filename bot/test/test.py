@@ -71,7 +71,7 @@ def save_ohlcv_data_to_json(ohlcv_data, filename):
     with open(filename, 'w') as f:
         json.dump(ohlcv_data, f, indent=4)
 
-def fetch_and_save_ohlcv_data(symbol='BTC/USDT'):
+def fetch_and_save_ohlcv_data(symbol='XRP/USDT'):
     # exchange = ccxt.binance()  # You can change the exchange if needed
     year = 2023
     name = symbol.split('/')[0]

@@ -6,7 +6,8 @@ import json
 import config
 from help.utils import percentage_difference, is_saturday, is_between_saturday_sunday_noon
 # Load the JSON file
-with open('test/btc/BTC_2023_07.json', 'r') as file:
+# with open('test/btc/BTC_2023_07.json', 'r') as file:
+with open('test/xrp/XRP_2023_01.json', 'r') as file:
     ohlcv_data = json.load(file)
 
 from help.trv import pivot_high, pivot_low
@@ -94,7 +95,8 @@ class TradingBot:
             # self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
             # self.candles = ohlcv_data[:1100]
             # self.candles = ohlcv_data[1100:(1100*2)]
-            self.candles = ohlcv_data[(1100*2):]
+            # self.candles = ohlcv_data[(1100*2):]
+            self.candles = ohlcv_data
 
      
         # Unpack the OHLCV data into separate lists

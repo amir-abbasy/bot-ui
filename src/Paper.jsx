@@ -64,8 +64,8 @@ function Paper() {
         total += pnl
 
 
-        return <div key={idx} className={`chart-card ${pnl > 0 ? 'bg-[#00ff8420]' : 'bg-[#ff000010]'}`} >
-          <p className="opacity-40"><span className="mr-2">{chart.date+1}</span>{getMonthName(chart.date)}</p>
+        return <div key={idx} className={`chart-card ${pnl > 0 ? 'bg-[#00ff8420]' : 'bg-[#ff000010]'}`}  >
+          <p className="opacity-40"><span className="mr-2">{chart.date + 1}</span>{getMonthName(chart.date)}</p>
           <p className="text-xl " style={{ color: pnl > 0 ? 'green' : 'red' }}>{pnl.toFixed(2)}</p>
           <div className='pos-card'>
             {chart.positions.map((pos, id) => {
@@ -76,7 +76,7 @@ function Paper() {
         </div>
       })}
 
-      <h1 style={{ color: total > 0 ? 'green' : 'red' }}>{total.toFixed(2)}<span className='text-white opacity-30'> {(total*4).toFixed(2)} / 40</span></h1>
+      <h1 style={{ color: total > 0 ? 'green' : 'red' }}>{total.toFixed(2)}<span className='text-white opacity-30'> {(total * 4).toFixed(2)} / 100</span></h1>
 
     </div>
   )
