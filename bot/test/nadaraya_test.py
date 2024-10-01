@@ -31,7 +31,7 @@ def calculate_pnl(
     entry_price, exit_price, position_type="LONG", position_size=10, fee_type="taker"
 ):
     # Load settings
-    leverage = 20
+    leverage = 10
 
     # Calculate total position size
     total_position_size = position_size * leverage  # Total position size controlled
@@ -130,12 +130,6 @@ def check_trade_signals():
         # ch = diff + (diff * .10) #10%
         time = timestamp_to_HHMM(candles[i][0])
 
-        top_sl = (nwe[i] + sae) + ch
-        bot_sl = (nwe[i] - sae) - ch
-        if i > 387 and i < 440:
-            # print(i, (nwe[i] - sae), ch, top_sl, ' < open', src[i], src[i] > top_sl)
-            pass
-
         if side == "SHORT":
             sl = entryPrice + ch
             bot = nwe[i] - sae
@@ -185,7 +179,8 @@ def check_trade_signals():
         #     print(f"Line: {n-i+1} -> {n-i}, y1 - sae: {nwe[i] - sae}, color: {dnCss}")
 
         # Check conditions and print labels
-        if src[i] > nwe[i] + sae and i + 1 < n and src[i + 1] < nwe[i] + sae:
+        # if src[i] > nwe[i] + sae and i + 1 < n and src[i + 1] < nwe[i] + sae:        
+        if src[i] > nwe[i] + sae:
             # print(f"▼ at {time} (open: {src[i]})")
             if side != "SHORT":
                 print("\n", time, "============ SHORT ===============", src[i])
@@ -193,7 +188,8 @@ def check_trade_signals():
                 isOrderPlaced = True
                 entryPrice = src[i]
 
-        if src[i] < nwe[i] - sae and i + 1 < n and src[i + 1] > nwe[i] - sae:
+        # if src[i] < nwe[i] - sae and i + 1 < n and src[i + 1] > nwe[i] - sae:        
+        if src[i] < nwe[i] - sae:
             # print(f"▲ at {time} (open: {src[i]})")
             if side != "LONG":
                 print("\n", time, "============ LONG ===============", src[i])
