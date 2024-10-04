@@ -3,6 +3,24 @@ import time
 from datetime import datetime
 import json
 import math
+import logging
+
+# Set up the logger to write to log.txt
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def log_action(action, details=""):
+    """
+    Logs CRUD actions with optional details.
+    """
+    logging.info(f"{action} - {details}")
+
+# CRUD Functions
+def log(item):
+    log_action("LOG", f"{item}")
+    # Your create logic here
+    print(item)
+    return f"Created {item}"
+
 
 # Initialize your exchange
 exchange = ccxt.binance({
@@ -19,9 +37,10 @@ exchange = ccxt.binance({
 #     ohlcv_data = json.load(file)
 
 
-symbol = 'BTC/USDT'
+symbol = 'XRP/USDT'
 timeframe = '1m'
-amount_usdt = 10  # Amount in USDT to spend
+leverage = 10
+amount_usdt = 10 * leverage  # Amount in USDT to spend
 minRange = 499
 
 
@@ -101,18 +120,21 @@ def timestamp_to_HHMM(timestamp_ms):
 
 
 class TradingBot:
-    def __init__(self):
+    def __init__(self, test=False):
         self.candles = fetch_candles(symbol, timeframe)
         # candles = ohlcv_data
         # self.opens = [candle[1] for candle in self.candles]
         # self.highs = [candle[2] for candle in self.candles]
         # self.lows = [candle[3] for candle in self.candles]
         self.closes = [candle[4] for candle in self.candles]
+        self.test = test
         
         self.side = None
         self.isOrderPlaced = False
         self.entryPrice = None
         self.sell_amount = 0
+        self.targetReach = False
+        self.initialTarget = 0
        
         
 
@@ -122,7 +144,7 @@ class TradingBot:
 
 
 
-    def analyse(self, test = False, ohlcv = None):
+    def analyse(self, ohlcv = None):
         candles = fetch_candles(symbol, timeframe)
         # candles = ohlcv_data
         # self.opens = [candle[1] for candle in self.candles]
@@ -164,24 +186,30 @@ class TradingBot:
 
         def ENTRY(type='LONG'):
             self.isOrderPlaced = True
-            return
-            new_order = long(symbol, amount_usdt) if type == 'LONG' else short(symbol, amount_usdt)
-            if new_order:
-                print(f"{type} order created successfully:", new_order)
-                self.isOrderPlaced = True
-            # Calculate the amount of BTC to sell
-            self.sell_amount = new_order['amount']  # Amount to close
+            self.targetReach = False
+            if not self.test:
+                # new_order = long(symbol, amount_usdt) if type == 'LONG' else short(symbol, amount_usdt)
+                # if new_order:
+                #     print(f"{type} order created successfully:", new_order)
+                #     log(f"{type} order created successfully:")
+                #     log(str(new_order))
+                # # Calculate the amount of BTC to sell
+                # self.sell_amount = new_order['amount']  # Amount to close
+                pass # entry 
 
 
         def EXIT():
             self.isOrderPlaced = False
-            return
-            close_order = close_position(symbol, self.sell_amount,  'sell' if self.side == 'SHORT' else 'buy')
-            if close_order:
-                print(f"{self.side} closed successfully:", close_order)
-                self.isOrderPlaced = False
-                self.side = None
-                time.sleep(2)
+            self.targetReach = False
+            self.side = None
+            if not self.test:
+                # close_order = close_position(symbol, self.sell_amount,  'buy' if self.side == 'SHORT' else 'sell')
+                # if close_order:
+                #     print(f"{self.side} closed successfully:", close_order)
+                #     log(f"{type} closed successfully:")
+                #     log(str(close_order))
+                #     time.sleep(2)
+                pass # exit 
 
         # Loop to print lines instead of drawing
         for i in range(min(minRange, n - 1) + 1):
@@ -189,70 +217,89 @@ class TradingBot:
             diff = (nwe[i] + sae) - (nwe[i] - sae)
             ch = diff * (25 / 100)  # value + (value * (percentage / 100))
             # ch = diff + (diff * .10) #10%
-            time = timestamp_to_HHMM(candles[i][0])
+            t = timestamp_to_HHMM(candles[i][0])
             price = src[i]
-            end = i == n-1
+            end = True if self.test else i == n-1
+            end2 = True if self.test else i == n-2
+          
+            top = nwe[i] + sae
+            bot = nwe[i] - sae
+            targetL = top - (ch * .5)
+            targetS = bot + (ch * .5)
 
 
-            if self.side == "SHORT" and end:
+            if self.side == "SHORT" and end and self.isOrderPlaced:
                 sl = self.entryPrice + ch
-                bot = nwe[i] - sae
                 # TRAILING
                 if price < bot:
-                    print(time, "EXIT WIN", price)
+                    log(f"{t} EXIT WIN {price}")
                     EXIT()
                     pass
 
                 # STOP LOSS
                 if price > sl:
-                    print(time, "EXIT SL", price)
+                    log(f"{t} EXIT SL {price}")
                     EXIT()
                     pass
 
+                # Target hit
+                if price < targetS: self.targetReach = True and self.isOrderPlaced
+                if self.targetReach and price > targetS:
+                    log(f"{t} MIN TARGET EXIT SHORT {price}")
+                    EXIT()
 
-            if self.side == "LONG" and end:
+
+
+            if self.side == "LONG" and end and self.isOrderPlaced:
                 sl = self.entryPrice - ch
-                top = nwe[i] + sae
                 # TRAILING
                 if price > top:
-                    print(time, "EXIT WIN", price)
+                    log(f"{t} EXIT WIN {price}")
                     EXIT()
                     pass
 
                 # STOP LOSS
                 if price < sl:
-                    print(time, "EXIT SL", price)
+                    log(f"{t} EXIT SL {price}")
                     EXIT()
                     pass
 
-            if(time == datetime.now().strftime('%H:%M')):
-                print(time) 
+                # Target hit
+                if price > targetL: self.targetReach = True and self.isOrderPlaced
+                if self.targetReach and price < targetL:
+                    log(f"{t} MIN TARGET EXIT LONG {price}")
+                    EXIT()
+
+
+
+            if(t == datetime.now().strftime('%H:%M')):
+                print(t, end='\r', flush=True) 
+                pass
+
+
         
             # Check conditions and print labels
-            # if src[i] > nwe[i] + sae and i + 1 < n and src[i + 1] < nwe[i] + sae :        
-            if src[i] > nwe[i] + sae and i > n-6:
-                print(datetime.now().strftime('%H:%M'), f"▼ at {time} (open: {price}) {i} n-{n-1}")
+            if price > top and i + 1 < n and src[i + 1] < top and end2:        
+            # if src[i] > nwe[i] + sae and end2:
+                print(datetime.now().strftime('%H:%M'), f"▼ at {t} (open: {price}) {i} n-{n-1}")
                 if self.side != "SHORT":
-                    if self.isOrderPlaced:
-                        print(time, "EXIT RV LONG", price)
-                        EXIT()
-                    
-                    print("\n", datetime.now().strftime('%H:%M'), time, "============ SHORT ===============", price)
+                    # print(self.isOrderPlaced, self.side, self.targetReach)
+                    log(f"\n{t} ============ SHORT =============== {price}")
                     self.side = "SHORT"
                     self.entryPrice = price
+                    self.initialTarget = top
                     ENTRY("SHORT")
 
-            # if src[i] < nwe[i] - sae and i + 1 < n and src[i + 1] > nwe[i] - sae :        
-            if src[i] < nwe[i] - sae and i > n-6:
-                print(datetime.now().strftime('%H:%M'), f"▲ at {time} (open: {price}) {i} n{n-1}")
+
+            if price < bot and i + 1 < n and src[i + 1] > bot and end2:        
+            # if src[i] < nwe[i] - sae and end2:
+                print(datetime.now().strftime('%H:%M'), f"▲ at {t} (open: {price}) {i} n{n-1}")
                 if self.side != "LONG":
-                    if self.isOrderPlaced:
-                        print(time, "EXIT RV SHORT", price)
-                        EXIT()
-                
-                    print("\n", datetime.now().strftime('%H:%M'), time, "============ LONG ===============", price)
+                    # print(self.isOrderPlaced, self.side, self.targetReach)
+                    log(f"\n{t} ============ LONG =============== {price}" )
                     self.side = "LONG"
                     self.entryPrice = price
+                    self.initialTarget = bot
                     ENTRY("LONG")
 
 
@@ -275,7 +322,7 @@ class TradingBot:
 
 
 def main():
-    bot = TradingBot()
+    bot = TradingBot(test=True)
     bot.run()
 
 
