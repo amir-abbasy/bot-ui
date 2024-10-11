@@ -9,7 +9,7 @@ import json
 
 from bot import TradingBot
 
-bot = TradingBot()
+bot = TradingBot(symbol='BTC/USDT', live=False)
 
 
 @asynccontextmanager
@@ -74,7 +74,7 @@ async def bot_backend():
                 # print(ohlcv_data[:10])  # Display first 10 records for debugging
 
             if ohlcv_data:
-                bot = TradingBot()
+                bot = TradingBot(symbol='XRP/USDT')
                 await bot.run(True, ohlcv_data)
                 response.append(
                     {

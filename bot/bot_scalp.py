@@ -1,9 +1,13 @@
 import ccxt
+from ccxt.base.errors import NetworkError
+
 import time
 from datetime import datetime
 import json
 import math
 import logging
+
+# from help.utils import encrypt, decrypt 
 
 # Set up the logger to write to log.txt
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,15 +25,25 @@ def log(item):
     print(item)
     return f"Created {item}"
 
+from plyer import notification
+def trigger_notification(title, message):
+    notification.notify(
+        title=title,
+        message=message,
+        app_name='Scalping Bot',  # Optional, for Linux and macOS
+        timeout=10                 # Duration in seconds for the notification to appear
+    )
 
 # Initialize your exchange
 exchange = ccxt.binance({
-    # 'apiKey': 'your_api_key',
-    # 'secret': 'your_api_secret',
+    'apiKey': '',
+    'secret': '',
     'enableRateLimit': True,
     'options': {
-        # 'defaultType': 'future'  # Use 'spot' for spot trading, 'future' for Futures
-    }
+        'defaultType': 'future'  # Use 'spot' for spot trading, 'future' for Futures
+    },
+    'timeout': 30000,  # Increase the timeout to 30 seconds
+
 })
 
 # Load the JSON file
@@ -38,16 +52,30 @@ exchange = ccxt.binance({
 
 
 symbol = 'XRP/USDT'
-timeframe = '1m'
-leverage = 10
+timeframe = '5m'
+leverage = 20
 amount_usdt = 10 * leverage  # Amount in USDT to spend
 minRange = 499
 
 
+# Define a function to fetch OHLCV data with retry logic
+def fetch_candles(symbol, timeframe='5m', limit=minRange, retries=5, delay=5):
+    attempt = 0  # To track the retry attempts
+    while attempt < retries:
+        try:
+            # Try to fetch the OHLCV data
+            candles = exchange.fetch_ohlcv(symbol, timeframe, limit)
+            return candles  # If successful, return the data
+        except NetworkError as e:
+            attempt += 1  # Increment the attempt counter
+            print(f"Network error: {e}. Attempt {attempt} of {retries}. Retrying in {delay} seconds...")
 
-def fetch_candles(symbol, timeframe):
-    return exchange.fetch_ohlcv(symbol, timeframe, limit=minRange)
+            # Wait for the specified delay before retrying
+            time.sleep(delay)
 
+    # If all retries fail, return None or a fallback value
+    print("Failed to fetch OHLCV data after multiple retries.")
+    return None
 
 
 def check_balance():
@@ -62,45 +90,57 @@ def check_balance():
 def long(symbol, amount_usdt):
     # Check balance
     usdt_balance = check_balance()
+    log(f'Balance : {usdt_balance}')
     
-    if usdt_balance < amount_usdt:
-        print(f"Insufficient balance. Available: {usdt_balance} USDT, Required: {amount_usdt} USDT")
-        return None
+    # if usdt_balance < amount_usdt:
+    #     print(f"Insufficient balance. Available: {usdt_balance} USDT, Required: {amount_usdt} USDT")
+    #     return None
     
-    # Calculate the amount of BTC to buy based on the current price
+    # Calculate the amount of BASE to buy based on the current price
     ticker = exchange.fetch_ticker(symbol)
     price = ticker['last']  # Last price of the symbol
-    amount_btc = amount_usdt / price
+    amount = amount_usdt / price
     
     # Create a market buy order
-    order = exchange.create_market_order(symbol, 'buy', amount_btc)
+    order = exchange.create_market_order(symbol, 'buy', amount)
+    trigger_notification('LONG', f'{symbol}, buy, {amount}')
+
     
     return order
 
 def short(symbol, amount_usdt):
     # Check balance
     usdt_balance = check_balance()
+    log(f'Balance : {usdt_balance}')
+
     
-    if usdt_balance < amount_usdt:
-        print(f"Insufficient balance. Available: {usdt_balance} USDT, Required: {amount_usdt} USDT")
-        return None
+    # if usdt_balance < amount_usdt:
+    #     print(f"Insufficient balance. Available: {usdt_balance} USDT, Required: {amount_usdt} USDT")
+    #     return None
     
-    # Calculate the amount of BTC to short based on the current price
+    # Calculate the amount of BASE to short based on the current price
     ticker = exchange.fetch_ticker(symbol)
     price = ticker['last']  # Last price of the symbol
-    amount_btc = amount_usdt / price
+    amount = amount_usdt / price # base currency
     
     # Create a market sell order to open a short position
-    order = exchange.create_market_order(symbol, 'sell', amount_btc)
+    order = exchange.create_market_order(symbol, 'sell', amount)
+    trigger_notification('SHORT', f'{symbol}, sell, {amount}')
+
     
     return order
 
-def close_position(symbol, amount_btc, side):
+def close_position(symbol, amount, side):
+    print("CLOSE AMOUNT:", amount)
     # Create a market order to close the position
     # If side is 'buy', it will close a short position
     # If side is 'sell', it will close a long position
-    order = exchange.create_market_order(symbol, side, amount_btc)
-    
+    order = exchange.create_market_order(symbol, side, amount)
+    trigger_notification(f'CLOSE {side}', f'{symbol}, {self.sell_amount}')
+
+    usdt_balance = check_balance()
+    log(f'Balance :::::: {usdt_balance}')
+
     return order
 
 
@@ -188,13 +228,12 @@ class TradingBot:
             self.isOrderPlaced = True
             self.targetReach = False
             if not self.test:
-                # new_order = long(symbol, amount_usdt) if type == 'LONG' else short(symbol, amount_usdt)
-                # if new_order:
-                #     print(f"{type} order created successfully:", new_order)
-                #     log(f"{type} order created successfully:")
-                #     log(str(new_order))
-                # # Calculate the amount of BTC to sell
-                # self.sell_amount = new_order['amount']  # Amount to close
+                new_order = long(symbol, amount_usdt) if type == 'LONG' else short(symbol, amount_usdt)
+                if new_order:
+                    log(f"{type} order created successfully:")
+                    log(str(new_order))
+                # Calculate the amount of BTC to sell
+                self.sell_amount = new_order['amount']  # Amount to close
                 pass # entry 
 
 
@@ -203,12 +242,11 @@ class TradingBot:
             self.targetReach = False
             self.side = None
             if not self.test:
-                # close_order = close_position(symbol, self.sell_amount,  'buy' if self.side == 'SHORT' else 'sell')
-                # if close_order:
-                #     print(f"{self.side} closed successfully:", close_order)
-                #     log(f"{type} closed successfully:")
-                #     log(str(close_order))
-                #     time.sleep(2)
+                close_order = close_position(symbol, self.sell_amount,  'buy' if self.side == 'SHORT' else 'sell')
+                if close_order:
+                    log(f"{self.side} closed successfully:")
+                    log(str(close_order))
+                    time.sleep(2)
                 pass # exit 
 
         # Loop to print lines instead of drawing
@@ -224,14 +262,14 @@ class TradingBot:
           
             top = nwe[i] + sae
             bot = nwe[i] - sae
-            targetL = top - (ch * .5)
-            targetS = bot + (ch * .5)
+            targetL = top - (ch * 1)
+            targetS = bot + (ch * 1)
 
 
             if self.side == "SHORT" and end and self.isOrderPlaced:
                 sl = self.entryPrice + ch
                 # TRAILING
-                if price < bot:
+                if price < bot or candles[i-1][3] < bot:
                     log(f"{t} EXIT WIN {price}")
                     EXIT()
                     pass
@@ -243,17 +281,17 @@ class TradingBot:
                     pass
 
                 # Target hit
-                if price < targetS: self.targetReach = True and self.isOrderPlaced
+                if price < targetS or candles[i-1][3] < targetS: self.targetReach = True and self.isOrderPlaced
                 if self.targetReach and price > targetS:
                     log(f"{t} MIN TARGET EXIT SHORT {price}")
                     EXIT()
 
 
-
+        
             if self.side == "LONG" and end and self.isOrderPlaced:
                 sl = self.entryPrice - ch
                 # TRAILING
-                if price > top:
+                if price > top or candles[i-1][2] > top:
                     log(f"{t} EXIT WIN {price}")
                     EXIT()
                     pass
@@ -265,7 +303,7 @@ class TradingBot:
                     pass
 
                 # Target hit
-                if price > targetL: self.targetReach = True and self.isOrderPlaced
+                if price > targetL or candles[i-1][2] > targetL: self.targetReach = True and self.isOrderPlaced
                 if self.targetReach and price < targetL:
                     log(f"{t} MIN TARGET EXIT LONG {price}")
                     EXIT()
@@ -316,13 +354,13 @@ class TradingBot:
             
             if abs_num == round(abs_num):
                 self.analyse()
-                time.sleep(60)  # Run every 15 minutes
+                time.sleep(60)  # 5min ,Run every 15 minutes
                 # break;
 
 
 
 def main():
-    bot = TradingBot(test=True)
+    bot = TradingBot(test=False)
     bot.run()
 
 

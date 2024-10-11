@@ -92,10 +92,10 @@ class TradingBot:
             # # print(len(self.candles))
         else:
             # self.candles = self.exchange.fetch_ohlcv(self.symbol, timeframe=self.timeframe, limit=1000)
-            self.candles = ohlcv_data[:1100]
+            # self.candles = ohlcv_data[:1100]
             # self.candles = ohlcv_data[1100:(1100*2)]
             # self.candles = ohlcv_data[(1100*2):]
-            # self.candles = ohlcv_data
+            self.candles = ohlcv_data
 
      
         # Unpack the OHLCV data into separate lists
