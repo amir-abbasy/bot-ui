@@ -4,6 +4,8 @@ from datetime import datetime
 import json
 import math
 import logging
+from ccxt.base.errors import NetworkError
+
 # from help.utils import encrypt, decrypt 
 
 # Set up the logger to write to log.txt
@@ -33,11 +35,11 @@ def trigger_notification(title, message):
 
 # Initialize your exchange
 exchange = ccxt.binance({
-    'apiKey': '',
-    'secret': '',
+    'apiKey': 'h5J8MK5WP5t2DKADpFvOhoE98chuKJxsSB7ny239DWaO49amJmkmzFgus7wEZPpH',
+    'secret': 'JEk6zkYmIrwOS1JswoIdPfwndqpfXRsfc00dS4F8rJS6c93qa8PRpLecOpCc8peb',
     'enableRateLimit': True,
     'options': {
-        'defaultType': 'future'  # Use 'spot' for spot trading, 'future' for Futures
+        # 'defaultType': 'future'  # Use 'spot' for spot trading, 'future' for Futures
     }
 })
 
@@ -54,9 +56,26 @@ minRange = 499
 
 
 
-def fetch_candles(symbol, timeframe):
-    return exchange.fetch_ohlcv(symbol, timeframe, limit=minRange)
+# def fetch_candles(symbol, timeframe):
+    # return exchange.fetch_ohlcv(symbol, timeframe, limit=minRange)
 
+def fetch_candles(symbol, timeframe=timeframe, limit=minRange, retries=5, delay=5):
+    attempt = 0  # To track the retry attempts
+    while attempt < retries:
+        try:
+            # Try to fetch the OHLCV data
+            candles = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
+            return candles  # If successful, return the data
+        except NetworkError as e:
+            attempt += 1  # Increment the attempt counter
+            print(f"Network error: {e}. Attempt {attempt} of {retries}. Retrying in {delay} seconds...")
+
+            # Wait for the specified delay before retrying
+            time.sleep(delay)
+
+    # If all retries fail, return None or a fallback value
+    print("Failed to fetch OHLCV data after multiple retries.")
+    return None
 
 
 def check_balance():
@@ -117,7 +136,7 @@ def close_position(symbol, amount, side):
     # If side is 'buy', it will close a short position
     # If side is 'sell', it will close a long position
     order = exchange.create_market_order(symbol, side, amount)
-    trigger_notification(f'CLOSE {side}', f'{symbol}, {self.sell_amount}')
+    trigger_notification(f'CLOSE {side}', f'{symbol}, {amount}')
 
     usdt_balance = check_balance()
     log(f'Balance :::::: {usdt_balance}')
@@ -142,12 +161,12 @@ def timestamp_to_HHMM(timestamp_ms):
 
 class TradingBot:
     def __init__(self, test=False):
-        self.candles = fetch_candles(symbol, timeframe)
+        # self.candles = fetch_candles(symbol, timeframe)
         # candles = ohlcv_data
         # self.opens = [candle[1] for candle in self.candles]
         # self.highs = [candle[2] for candle in self.candles]
         # self.lows = [candle[3] for candle in self.candles]
-        self.closes = [candle[4] for candle in self.candles]
+        # self.closes = [candle[4] for candle in self.candles]
         self.test = test
         
         self.side = None
@@ -176,7 +195,7 @@ class TradingBot:
 
         # Input parameters
         h = 8.0
-        mult = 3.0
+        mult = 2 #3.0
         src = closes
         n = len(src)
 
@@ -221,15 +240,15 @@ class TradingBot:
         def EXIT():
             self.isOrderPlaced = False
             self.targetReach = False
-            self.side = None
             if not self.test:
                 close_order = close_position(symbol, self.sell_amount,  'buy' if self.side == 'SHORT' else 'sell')
                 if close_order:
                     log(f"{self.side} closed successfully:")
                     log(str(close_order))
                     time.sleep(2)
+                    self.side = None
                 pass # exit 
-
+                   
         # Loop to print lines instead of drawing
         for i in range(min(minRange, n - 1) + 1):
 
@@ -243,16 +262,19 @@ class TradingBot:
           
             top = nwe[i] + sae
             bot = nwe[i] - sae
-            targetL = top - (ch * 1)
-            targetS = bot + (ch * 1)
+            targetL = top - (ch * .5)
+            targetS = bot + (ch * .5)
+            isBullish = candles[i-1][1] < candles[i-1][4]
 
 
             if self.side == "SHORT" and end and self.isOrderPlaced:
                 sl = self.entryPrice + ch
                 # TRAILING
                 if price < bot or candles[i-1][3] < bot:
-                    log(f"{t} EXIT WIN {price}")
-                    EXIT()
+                    self.targetReach = True
+                    if isBullish:
+                        log(f"{t} EXIT WIN {price}")
+                        EXIT()
                     pass
 
                 # STOP LOSS
@@ -262,7 +284,7 @@ class TradingBot:
                     pass
 
                 # Target hit
-                if price < targetS or candles[i-1][3] < targetS: self.targetReach = True and self.isOrderPlaced
+                if (price < targetS or candles[i-1][3] < targetS) and self.isOrderPlaced: self.targetReach = True
                 if self.targetReach and price > targetS:
                     log(f"{t} MIN TARGET EXIT SHORT {price}")
                     EXIT()
@@ -273,8 +295,10 @@ class TradingBot:
                 sl = self.entryPrice - ch
                 # TRAILING
                 if price > top or candles[i-1][2] > top:
-                    log(f"{t} EXIT WIN {price}")
-                    EXIT()
+                    self.targetReach = True
+                    if not isBullish:
+                        log(f"{t} EXIT WIN {price}")
+                        EXIT()
                     pass
 
                 # STOP LOSS
@@ -284,7 +308,7 @@ class TradingBot:
                     pass
 
                 # Target hit
-                if price > targetL or candles[i-1][2] > targetL: self.targetReach = True and self.isOrderPlaced
+                if (price > targetL or candles[i-1][2] > targetL) and self.isOrderPlaced: self.targetReach = True
                 if self.targetReach and price < targetL:
                     log(f"{t} MIN TARGET EXIT LONG {price}")
                     EXIT()

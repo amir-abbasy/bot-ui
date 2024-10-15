@@ -30,3 +30,5 @@ if false breakout
 
 
 
+
+ec2-user@ec2-3-110-222-13.ap-south-1.compute.amazonaws.com
