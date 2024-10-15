@@ -3,8 +3,8 @@ from flask import Flask, send_file, render_template_string
 app = Flask(__name__)
 
 # Paths to your log files
-log_file_1 = '/home/ioss/Documents/Learn/bot-ui/bot/test/log.txt'
-log_file_2 = '/home/ioss/Documents/Learn/bot-ui/bot/test/log_top_bot.txt'
+log_file_1 = '/home/ioss/Documents/Learn/bot-ui/bot/log.txt'
+log_file_2 = '/home/ioss/Documents/Learn/bot-ui/bot/log_top_bot.txt'
 default_log_file = log_file_1
 
 @app.route('/')
